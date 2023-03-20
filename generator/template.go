@@ -13,8 +13,8 @@ import (
 	"github.com/Masterminds/sprig"
 	"github.com/iancoleman/strcase"
 
-	"github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/data"
-	"github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/registry"
+	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/data"
+	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/registry"
 )
 
 const tmpl = `

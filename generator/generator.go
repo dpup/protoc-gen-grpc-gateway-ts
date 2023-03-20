@@ -10,8 +10,8 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	log "github.com/sirupsen/logrus" // nolint: depguard
 
-	"github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/data"
-	"github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/registry"
+	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/data"
+	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/registry"
 	"github.com/pkg/errors"
 )
 
