@@ -558,16 +558,18 @@ func tsType(r *registry.Registry, fieldType data.Type) string {
 func mapWellKnownType(protoType string) string {
 	switch protoType {
 	case ".google.protobuf.BoolValue":
-		return "boolean | undefined"
+		return "boolean | null"
 	case ".google.protobuf.StringValue":
-		return "string | undefined"
+		return "string | null"
 	case ".google.protobuf.DoubleValue",
 		".google.protobuf.FloatValue",
 		".google.protobuf.Int32Value",
 		".google.protobuf.Int64Value",
 		".google.protobuf.UInt32Value",
 		".google.protobuf.UInt64Value":
-		return "number | undefined"
+		return "number | null"
+	case ".google.protobuf.ListValue":
+		return "T[]"
 	}
 
 	return ""
@@ -576,13 +578,13 @@ func mapWellKnownType(protoType string) string {
 func mapScalaType(protoType string) string {
 	switch protoType {
 	case "uint64", "sint64", "int64", "fixed64", "sfixed64", "string":
-		return "string"
+		return "string | null"
 	case "float", "double", "int32", "sint32", "uint32", "fixed32", "sfixed32":
-		return "number"
+		return "number | null"
 	case "bool":
-		return "boolean"
+		return "boolean | null"
 	case "bytes":
-		return "Uint8Array"
+		return "Uint8Array | null"
 	}
 
 	return ""
