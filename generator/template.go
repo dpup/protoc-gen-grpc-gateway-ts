@@ -578,13 +578,13 @@ func mapWellKnownType(protoType string) string {
 func mapScalaType(protoType string) string {
 	switch protoType {
 	case "uint64", "sint64", "int64", "fixed64", "sfixed64", "string":
-		return "string | null"
+		return "string"
 	case "float", "double", "int32", "sint32", "uint32", "fixed32", "sfixed32":
-		return "number | null"
+		return "number"
 	case "bool":
-		return "boolean | null"
+		return "boolean"
 	case "bytes":
-		return "Uint8Array | null"
+		return "Uint8Array"
 	}
 
 	return ""
