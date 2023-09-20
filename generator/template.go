@@ -84,6 +84,15 @@ type OneOf<T> =
         : never)
     : never);
 {{end}}
+{{- if .NeedsStructPBSupport}}
+type StructPBValue =
+  | null
+  | boolean
+  | string
+  | number
+  | { [key: string]: StructPBValue }
+  | StructPBValue[];
+{{end}}
 {{- if .Enums}}{{include "enums" .Enums}}{{end}}
 {{- if .Messages}}{{include "messages" .Messages}}{{end}}
 {{- if .Services}}{{include "services" .Services}}{{end}}
@@ -558,16 +567,20 @@ func tsType(r *registry.Registry, fieldType data.Type) string {
 func mapWellKnownType(protoType string) string {
 	switch protoType {
 	case ".google.protobuf.BoolValue":
-		return "boolean | undefined"
+		return "boolean | null"
 	case ".google.protobuf.StringValue":
-		return "string | undefined"
+		return "string | null"
 	case ".google.protobuf.DoubleValue",
 		".google.protobuf.FloatValue",
 		".google.protobuf.Int32Value",
 		".google.protobuf.Int64Value",
 		".google.protobuf.UInt32Value",
 		".google.protobuf.UInt64Value":
-		return "number | undefined"
+		return "number | null"
+	case ".google.protobuf.ListValue":
+		return "StructPBValue[]"
+	case ".google.protobuf.Struct":
+		return "{ [key: string]: StructPBValue }"
 	}
 
 	return ""

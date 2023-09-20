@@ -27,6 +27,22 @@ func (m *Message) HasOneOfFields() bool {
 	return len(m.OneOfFieldsGroups) > 0
 }
 
+func (m *Message) HasStructPBFields() bool {
+	for _, f := range m.Fields {
+		if f.Type == ".google.protobuf.ListValue" || f.Type == ".google.protobuf.Struct" {
+			return true
+		}
+	}
+
+	for _, mm := range m.Messages {
+		if mm.HasStructPBFields() {
+			return true
+		}
+	}
+
+	return false
+}
+
 // NewMessage initialises and return a Message
 func NewMessage() *Message {
 	return &Message{
