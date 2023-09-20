@@ -84,6 +84,15 @@ type OneOf<T> =
         : never)
     : never);
 {{end}}
+{{- if .NeedsStructPBSupport}}
+type StructPBValue =
+  | null
+  | boolean
+  | string
+  | number
+  | { [key: string]: StructPBValue }
+  | StructPBValue[];
+{{end}}
 {{- if .Enums}}{{include "enums" .Enums}}{{end}}
 {{- if .Messages}}{{include "messages" .Messages}}{{end}}
 {{- if .Services}}{{include "services" .Services}}{{end}}
@@ -569,7 +578,9 @@ func mapWellKnownType(protoType string) string {
 		".google.protobuf.UInt64Value":
 		return "number | null"
 	case ".google.protobuf.ListValue":
-		return "T[]"
+		return "StructPBValue[]"
+	case ".google.protobuf.Struct":
+		return "{ [key: string]: StructPBValue }"
 	}
 
 	return ""
