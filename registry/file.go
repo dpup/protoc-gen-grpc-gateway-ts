@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/data"
-	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/options"
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/options"
 	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus" // nolint: depguard

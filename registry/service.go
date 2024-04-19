@@ -7,7 +7,7 @@ import (
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/BeProductable/protoc-gen-grpc-gateway-ts/data"
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 )
 
 func getHTTPAnnotation(m *descriptorpb.MethodDescriptorProto) *annotations.HttpRule {

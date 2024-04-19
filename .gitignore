@@ -3,3 +3,4 @@ protoc-gen-grpc-gateway-ts
 */node_modules/*
 */coverage/*
 dist/*
+tmp/

@@ -1,6 +1,9 @@
 # protoc-gen-grpc-gateway-ts
 
-`protoc-gen-grpc-gateway-ts` is a TypeScript client generator for the [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway/) project. It generates idiomatic TypeScript clients that connect the web frontend and golang backend fronted by grpc-gateway.
+`protoc-gen-grpc-gateway-ts` is a TypeScript client generator for the [grpc-gateway](https://github.com/dpup/grpc-gateway/) project. It generates idiomatic TypeScript clients that connect the web frontend and golang backend fronted by grpc-gateway.
+
+> [!NOTE]
+> The official gRPC ecosystem repository hasn't been updated in since 2022 and there are a number of pending pull requests and issues that would be good to resolve. @seanami and @dpup work for two separate organizations using this fork and intend to breath a bit of life into this project. We hope these changes can be merged upstream at some point.
 
 ## Features:
 1. Idiomatic Typescript clients and messages.
@@ -8,10 +11,14 @@
 3. POJO request construction guarded by message type definitions, which is way easier compare to `grpc-web`.
 4. No need to use swagger/open api to generate client code for the web.
 
+### Fixes made since the fork
+
+1. [Support for well-known wrapper types](https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/pull/50)
+
 ## Getting Started:
 
 ### Install `protoc-gen-grpc-gateway-ts`
-You will need to install `protoc-gen-grpc-gateway-ts` before it could be picked up by the `protoc` command. Just run `go install github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts`
+You will need to install `protoc-gen-grpc-gateway-ts` before it could be picked up by the `protoc` command. Just run `go install github.com/dpup/protoc-gen-grpc-gateway-ts`
 
 ### Sample Usage:
 `protoc-gen-grpc-gateway-ts` should be used along with the `protoc` command. A sample invocation looks like the following:
@@ -42,7 +49,7 @@ Turn on logging to stderr. Default to false.
 Defines the logging levels. Default to info. Valid values are: debug, info, warn, error
 
 ### Notes:
-Zero-value fields are omitted from the URL query parameter list for GET requests. Therefore for a request payload such as `{ a: "A", b: "" c: 1, d: 0, e: false }` will become `/path/query?a=A&c=1`. A sample implementation is present within this [proto file](https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/blob/master/integration_tests/service.proto) in the`integration_tests` folder. For further explanation please read the following:
+Zero-value fields are omitted from the URL query parameter list for GET requests. Therefore for a request payload such as `{ a: "A", b: "" c: 1, d: 0, e: false }` will become `/path/query?a=A&c=1`. A sample implementation is present within this [proto file](https://github.com/dpup/protoc-gen-grpc-gateway-ts/blob/master/integration_tests/service.proto) in the`integration_tests` folder. For further explanation please read the following:
 - <https://developers.google.com/protocol-buffers/docs/proto3#default>
 - <https://github.com/googleapis/googleapis/blob/master/google/api/http.proto>
 
@@ -93,6 +100,23 @@ async function increaseRepeatedly(base: number): Promise<number[]> {
   return results
 }
 
+```
+
+## Development
+
+Required dependencies:
+
+```
+brew install typescript
+brew install golangci-lint
+```
+
+To run tests:
+
+```
+make testdata
+make go-tests
+make integration-tests
 ```
 
 ## License

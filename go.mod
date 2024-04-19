@@ -1,4 +1,4 @@
-module github.com/BeProductable/protoc-gen-grpc-gateway-ts
+module github.com/dpup/protoc-gen-grpc-gateway-ts
 
 go 1.14
 
@@ -19,6 +19,5 @@ require (
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
 	google.golang.org/grpc v1.33.1
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.25.0
 )
