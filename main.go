@@ -8,7 +8,7 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	log "github.com/sirupsen/logrus" // nolint: depguard
 	"google.golang.org/protobuf/proto"
-
+	"google.golang.org/protobuf/types/pluginpb"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/generator"
 	"github.com/pkg/errors"
 )
@@ -55,6 +55,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	features := uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+	resp.SupportedFeatures = &features
 
 	encodeResponse(resp)
 	log.Debug("generation finished")

@@ -461,7 +461,6 @@ func fieldName(r *registry.Registry) func(name string) string {
 		if r.UseProtoNames {
 			return name
 		}
-
 		return strcase.ToLowerCamel(name)
 	}
 }
@@ -546,7 +545,6 @@ func tsType(r *registry.Registry, fieldType data.Type) string {
 
 		return fmt.Sprintf("{[key: %s]: %s}", keyType, valueType)
 	}
-
 	typeStr := ""
 	if mapWellKnownType(info.Type) != "" {
 		typeStr = mapWellKnownType(info.Type)

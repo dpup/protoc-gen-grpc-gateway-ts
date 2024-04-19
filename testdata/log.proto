@@ -79,6 +79,7 @@ message PushLogRequest {
 
 message PushLogResponse {
   bool success = 1;
+  optional string message = 2;
 }
 
 service LogService {
