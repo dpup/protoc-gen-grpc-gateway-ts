@@ -14,6 +14,7 @@
 ### Fixes made since the fork
 
 1. [Support for well-known wrapper types](https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/pull/50)
+2. Updated to support gRPC gateway v2 and latest protoc-gen-go
 
 ## Getting Started:
 
