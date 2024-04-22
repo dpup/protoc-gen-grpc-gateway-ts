@@ -1,5 +1,8 @@
 #!/bin/bash
 
+GOBIN=$(go env GOPATH)/bin
+PATH=$GOBIN:$PATH
+
 function runTest {
   ORIG_NAME=${1:="false"}
   CONFIG_NAME=${2:="karma.conf.js"}

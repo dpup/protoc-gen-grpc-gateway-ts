@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // preflightHandler adds the necessary headers in order to serve
@@ -36,6 +38,8 @@ func allowCORS(h http.Handler) http.Handler {
 	})
 }
 
+const endpoint = "localhost:9000"
+
 func main() {
 	origName := flag.Bool("orig", false, "tell server to use origin name in jsonpb")
 	flag.Parse()
@@ -43,40 +47,41 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	l, err := net.Listen("tcp4", "localhost:9000")
+	grpcListener, err := net.Listen("tcp4", endpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	rcs := &RealCounterService{}
-	s := grpc.NewServer()
-	RegisterCounterServiceServer(s, rcs)
+	grpcServer := grpc.NewServer()
+	RegisterCounterServiceServer(grpcServer, &RealCounterService{})
+
+	gateway := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{
+		Marshaler: &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: *origName,
+			},
+		},
+	}))
+
+	err = RegisterCounterServiceHandlerFromEndpoint(ctx, gateway, endpoint, []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
-		defer s.GracefulStop()
+		defer grpcServer.GracefulStop()
 		<-ctx.Done()
 	}()
 
 	go func() {
-		err := s.Serve(l)
-		if err != nil {
+		if err := grpcServer.Serve(grpcListener); err != nil {
 			panic(err)
 		}
 	}()
 
-	// Register gRPC server endpoint
-	// Note: Make sure the gRPC server is running properly and accessible
-	mux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-		OrigName: *origName,
-	}))
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = RegisterCounterServiceHandlerFromEndpoint(ctx, mux, "localhost:9000", opts)
-	if err != nil {
-		panic(err)
-	}
-
-	err = http.ListenAndServe(":8081", allowCORS(mux))
-	if err != nil {
+	if err = http.ListenAndServe(":8081", allowCORS(gateway)); err != nil {
 		panic(err)
 	}
 

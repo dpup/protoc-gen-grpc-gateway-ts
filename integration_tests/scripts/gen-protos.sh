@@ -1,6 +1,10 @@
 #!/bin/bash
 USE_PROTO_NAMES=${1:-"false"}
 ENABLE_STYLING_CHECK=${2:-"false"}
+
+GOBIN=$(go env GOPATH)/bin
+PATH=$GOBIN:$PATH
+
 cd .. && go install && cd integration_tests && \
 	protoc -I .  -I ../.. \
 	--grpc-gateway-ts_out=logtostderr=true,use_proto_names=$USE_PROTO_NAMES,enable_styling_check=$ENABLE_STYLING_CHECK,loglevel=debug:./ \
