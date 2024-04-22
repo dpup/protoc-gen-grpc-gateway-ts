@@ -107,3 +107,18 @@ func (r *RealCounterService) HTTPGetWithZeroValueURLSearchParams(ctx context.Con
 		},
 	}, nil
 }
+
+func (r *RealCounterService) HTTPGetWithOptionalFields(ctx context.Context, in *OptionalFieldsRequest) (*OptionalFieldsResponse, error) {
+	var s string
+	var n int32
+	return &OptionalFieldsResponse{
+		EchoStr: in.Str + "hello",
+		EchoNumber: in.Number + 123,
+		EchoOptStr: in.OptStr,
+		EchoOptNumber: in.OptNumber,
+		NewStr: "",
+		NewNumber: 0,
+		NewOptStr: &s,
+		NewOptNumber: &n,
+	}, nil
+}

@@ -15,6 +15,7 @@
 
 1. [Support for well-known wrapper types](https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/pull/50)
 2. Updated to support gRPC gateway v2 and latest protoc-gen-go
+3. Support for proto3 optional fields (requires EmitUnpopulated enabled on the gRPC Gateway to function as expected)
 
 ## Getting Started:
 

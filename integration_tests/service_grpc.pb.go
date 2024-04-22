@@ -32,6 +32,7 @@ const (
 	CounterService_ExternalMessage_FullMethodName                     = "/main.CounterService/ExternalMessage"
 	CounterService_HTTPGetWithURLSearchParams_FullMethodName          = "/main.CounterService/HTTPGetWithURLSearchParams"
 	CounterService_HTTPGetWithZeroValueURLSearchParams_FullMethodName = "/main.CounterService/HTTPGetWithZeroValueURLSearchParams"
+	CounterService_HTTPGetWithOptionalFields_FullMethodName           = "/main.CounterService/HTTPGetWithOptionalFields"
 )
 
 // CounterServiceClient is the client API for CounterService service.
@@ -50,6 +51,7 @@ type CounterServiceClient interface {
 	ExternalMessage(ctx context.Context, in *ExternalRequest, opts ...grpc.CallOption) (*ExternalResponse, error)
 	HTTPGetWithURLSearchParams(ctx context.Context, in *HTTPGetWithURLSearchParamsRequest, opts ...grpc.CallOption) (*HTTPGetWithURLSearchParamsResponse, error)
 	HTTPGetWithZeroValueURLSearchParams(ctx context.Context, in *HTTPGetWithZeroValueURLSearchParamsRequest, opts ...grpc.CallOption) (*HTTPGetWithZeroValueURLSearchParamsResponse, error)
+	HTTPGetWithOptionalFields(ctx context.Context, in *OptionalFieldsRequest, opts ...grpc.CallOption) (*OptionalFieldsResponse, error)
 }
 
 type counterServiceClient struct {
@@ -191,6 +193,15 @@ func (c *counterServiceClient) HTTPGetWithZeroValueURLSearchParams(ctx context.C
 	return out, nil
 }
 
+func (c *counterServiceClient) HTTPGetWithOptionalFields(ctx context.Context, in *OptionalFieldsRequest, opts ...grpc.CallOption) (*OptionalFieldsResponse, error) {
+	out := new(OptionalFieldsResponse)
+	err := c.cc.Invoke(ctx, CounterService_HTTPGetWithOptionalFields_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CounterServiceServer is the server API for CounterService service.
 // All implementations must embed UnimplementedCounterServiceServer
 // for forward compatibility
@@ -207,6 +218,7 @@ type CounterServiceServer interface {
 	ExternalMessage(context.Context, *ExternalRequest) (*ExternalResponse, error)
 	HTTPGetWithURLSearchParams(context.Context, *HTTPGetWithURLSearchParamsRequest) (*HTTPGetWithURLSearchParamsResponse, error)
 	HTTPGetWithZeroValueURLSearchParams(context.Context, *HTTPGetWithZeroValueURLSearchParamsRequest) (*HTTPGetWithZeroValueURLSearchParamsResponse, error)
+	HTTPGetWithOptionalFields(context.Context, *OptionalFieldsRequest) (*OptionalFieldsResponse, error)
 	mustEmbedUnimplementedCounterServiceServer()
 }
 
@@ -249,6 +261,9 @@ func (UnimplementedCounterServiceServer) HTTPGetWithURLSearchParams(context.Cont
 }
 func (UnimplementedCounterServiceServer) HTTPGetWithZeroValueURLSearchParams(context.Context, *HTTPGetWithZeroValueURLSearchParamsRequest) (*HTTPGetWithZeroValueURLSearchParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HTTPGetWithZeroValueURLSearchParams not implemented")
+}
+func (UnimplementedCounterServiceServer) HTTPGetWithOptionalFields(context.Context, *OptionalFieldsRequest) (*OptionalFieldsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HTTPGetWithOptionalFields not implemented")
 }
 func (UnimplementedCounterServiceServer) mustEmbedUnimplementedCounterServiceServer() {}
 
@@ -482,6 +497,24 @@ func _CounterService_HTTPGetWithZeroValueURLSearchParams_Handler(srv interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CounterService_HTTPGetWithOptionalFields_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OptionalFieldsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CounterServiceServer).HTTPGetWithOptionalFields(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CounterService_HTTPGetWithOptionalFields_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CounterServiceServer).HTTPGetWithOptionalFields(ctx, req.(*OptionalFieldsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CounterService_ServiceDesc is the grpc.ServiceDesc for CounterService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -532,6 +565,10 @@ var CounterService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HTTPGetWithZeroValueURLSearchParams",
 			Handler:    _CounterService_HTTPGetWithZeroValueURLSearchParams_Handler,
+		},
+		{
+			MethodName: "HTTPGetWithOptionalFields",
+			Handler:    _CounterService_HTTPGetWithOptionalFields_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -9,7 +9,7 @@ testdata:
 	@export PATH=$$PATH:$$(go env GOPATH)/bin; \
 	cd testdata && protoc -I . \
 	--grpc-gateway-ts_out=logtostderr=true:./ \
-    log.proto environment.proto ./datasource/datasource.proto
+	log.proto environment.proto ./datasource/datasource.proto
 
 .PHONY: lint
 lint:
@@ -23,6 +23,10 @@ go-tests:
 	go test ./...
 
 .PHONY: integration-tests
-integration-tests:
-	@export PATH=$$PATH:$$(go env GOPATH)/bin; \
+integration-tests: integration-tests-gengo
 	cd integration_tests && ./scripts/test-ci.sh
+
+.PHONY: integration-tests-gengo
+integration-tests-gengo:
+	go install; \
+	cd integration_tests && ./scripts/gen-server-proto.sh

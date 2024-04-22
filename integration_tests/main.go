@@ -58,7 +58,8 @@ func main() {
 	gateway := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{
 		Marshaler: &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: *origName,
+				UseProtoNames:   *origName,
+				EmitUnpopulated: true, // Required to support optional fields as expected.
 			},
 		},
 	}))

@@ -22,7 +22,7 @@ describe("test grpc-gateway-ts communication", () => {
 
   it("failing unary request", async () => {
     try {
-      await CounterService.FailingIncrement({ counter: 199 }, { pathPrefix: "http://localhost:8081" }); 
+      await CounterService.FailingIncrement({ counter: 199 }, { pathPrefix: "http://localhost:8081" });
       expect.fail("expected call to throw");
     } catch (e) {
       expect(e).to.have.property("message", "this increment does not work")
@@ -77,7 +77,7 @@ describe("test grpc-gateway-ts communication", () => {
     const result = await CounterService.HTTPDelete({ a: 10 }, { pathPrefix: "http://localhost:8081" })
     expect(result).to.be.empty
   })
-    
+
   it('http get request with url search parameters', async () => {
     const result = await CounterService.HTTPGetWithURLSearchParams({ a: 10, [getFieldName('post_req')]: { b: 0 }, c: [23, 25], [getFieldName('ext_msg')]: { d: 12 } }, { pathPrefix: "http://localhost:8081" })
     expect(getField(result, 'url_search_params_result')).to.equal(70)
@@ -86,5 +86,19 @@ describe("test grpc-gateway-ts communication", () => {
   it('http get request with zero value url search parameters', async () => {
     const result = await CounterService.HTTPGetWithZeroValueURLSearchParams({ a: "A", b: "", [getFieldName('zero_value_msg')]: { c: 1, d: [1, 0, 2], e: false } }, { pathPrefix: "http://localhost:8081" })
     expect(result).to.deep.equal({ a: "A", b: "hello", [getFieldName('zero_value_msg')]: { c: 2, d: [2, 1, 3], e: true } })
+  })
+
+  it('http get request with optional fields', async () => {
+    const result = await CounterService.HTTPGetWithOptionalFields({}, { pathPrefix: "http://localhost:8081" })
+    // opt fields should always be undefined.
+    expect(result).to.deep.equal({
+      [getFieldName('echo_str')]: "hello",
+      [getFieldName('echo_number')]: 123,
+      // echo_opt_ vars will be undefined.
+      [getFieldName('new_str')]: "",
+      [getFieldName('new_number')]: 0,
+      [getFieldName('new_opt_str')]: "",
+      [getFieldName('new_opt_number')]: 0
+    })
   })
 })

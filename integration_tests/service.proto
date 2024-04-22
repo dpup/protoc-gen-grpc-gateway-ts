@@ -94,6 +94,26 @@ message HTTPGetWithZeroValueURLSearchParamsResponse {
   ZeroValueMsg zero_value_msg = 3;
 }
 
+message OptionalFieldsRequest {
+  string str = 1;
+  int32 number = 2;
+  optional string opt_str = 3;
+  optional int32 opt_number = 4;
+}
+
+message OptionalFieldsResponse {
+  string echo_str = 1;
+  int32 echo_number = 2;
+  optional string echo_opt_str = 3;
+  optional int32 echo_opt_number = 4;
+
+  string new_str = 5;
+  int32 new_number = 6;
+  optional string new_opt_str = 7;
+  optional int32 new_opt_number = 8;
+}
+
+
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
   rpc StreamingIncrements(StreamingRequest) returns (stream StreamingResponse);
@@ -136,6 +156,11 @@ service CounterService {
   rpc HTTPGetWithZeroValueURLSearchParams(HTTPGetWithZeroValueURLSearchParamsRequest) returns (HTTPGetWithZeroValueURLSearchParamsResponse) {
     option (google.api.http) = {
       get: "/path/query"
+    };
+  }
+  rpc HTTPGetWithOptionalFields(OptionalFieldsRequest) returns (OptionalFieldsResponse) {
+    option (google.api.http) = {
+      get: "/optional"
     };
   }
 }
