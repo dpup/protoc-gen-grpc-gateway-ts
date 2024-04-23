@@ -4,4 +4,4 @@ source ./scripts/source.sh
 
 CONF="karma.conf.js"
 
-runTest ${1:-false} $CONF
+runTest ${1:-false} ${2:-false} $CONF

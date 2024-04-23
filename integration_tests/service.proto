@@ -67,9 +67,9 @@ message HttpDeleteRequest {
 
 message HTTPGetWithURLSearchParamsRequest {
   int32 a = 1;
-  PostRequest post_req = 2;
+  PostRequest b = 2;
   repeated int32 c = 3;
-  ExternalMessage ext_msg = 4;
+  ExternalMessage d = 4;
 }
 
 message HTTPGetWithURLSearchParamsResponse {
@@ -85,7 +85,7 @@ message ZeroValueMsg {
 message HTTPGetWithZeroValueURLSearchParamsRequest {
   string a = 1;
   string b = 2;
-  ZeroValueMsg zero_value_msg = 3;
+  ZeroValueMsg c = 3;
 }
 
 message HTTPGetWithZeroValueURLSearchParamsResponse {
@@ -94,25 +94,35 @@ message HTTPGetWithZeroValueURLSearchParamsResponse {
   ZeroValueMsg zero_value_msg = 3;
 }
 
-message OptionalFieldsRequest {
-  string str = 1;
-  int32 number = 2;
-  optional string opt_str = 3;
-  optional int32 opt_number = 4;
-}
+message OptionalFieldsRequest {}
 
 message OptionalFieldsResponse {
-  string echo_str = 1;
-  int32 echo_number = 2;
-  optional string echo_opt_str = 3;
-  optional int32 echo_opt_number = 4;
+  string empty_str = 1;
+  int32 empty_number = 2;
+  OptionalFieldsSubMsg empty_msg = 3;
+  optional string empty_opt_str = 4;
+  optional int32 empty_opt_number = 5;
+  optional OptionalFieldsSubMsg empty_opt_msg = 6;
 
-  string new_str = 5;
-  int32 new_number = 6;
-  optional string new_opt_str = 7;
-  optional int32 new_opt_number = 8;
+  string zero_str = 7;
+  int32 zero_number = 8;
+  OptionalFieldsSubMsg zero_msg = 9;
+  optional string zero_opt_str = 10;
+  optional int32 zero_opt_number = 11;
+  optional OptionalFieldsSubMsg zero_opt_msg = 12;
+
+  string defined_str = 13;
+  int32 defined_number = 14;
+  OptionalFieldsSubMsg defined_msg = 15;
+  optional string defined_opt_str = 16;
+  optional int32 defined_opt_number = 17;
+  optional OptionalFieldsSubMsg defined_opt_msg = 18;
 }
 
+message OptionalFieldsSubMsg {
+  string str = 1;
+  optional string opt_str = 2;
+}
 
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
