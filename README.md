@@ -25,7 +25,12 @@ You will need to install `protoc-gen-grpc-gateway-ts` before it could be picked 
 ### Sample Usage:
 `protoc-gen-grpc-gateway-ts` should be used along with the `protoc` command. A sample invocation looks like the following:
 
-`protoc --grpc-gateway-ts_out=ts_import_roots=$(pwd),ts_import_root_aliases=base:. input.proto`
+```bash
+protoc --grpc-gateway-ts_out . \
+  --grpc-gateway-ts_opt ts_import_roots=$(pwd) \
+  --grpc-gateway-ts_opt ts_import_root_aliases=base \
+  input.proto
+```
 
 As a result the generated file will be `input.pb.ts` in the same directory.
 
@@ -125,7 +130,8 @@ You should then pass `emit_unpopulated` as a parameter to the typescript plugin:
 ```bash
   protoc \
   ... \
-  --grpc-gateway-ts_out=emit_unpopulated=true:./ \
+  --grpc-gateway-ts_out ./ \
+  --grpc-gateway-ts_opt emit_unpopulated=true \
   ...
 ```
 
