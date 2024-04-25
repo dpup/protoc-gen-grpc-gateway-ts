@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/generator"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus" // nolint: depguard
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
-	"github.com/dpup/protoc-gen-grpc-gateway-ts/generator"
-	"github.com/pkg/errors"
 )
 
 func decodeReq() *plugin.CodeGeneratorRequest {

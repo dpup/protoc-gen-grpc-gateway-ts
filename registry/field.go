@@ -59,6 +59,7 @@ func (r *Registry) analyseField(fileData *data.File, msgData *data.Message, pack
 		Type:         fqTypeName,
 		IsExternal:   isExternal,
 		IsOneOfField: f.OneofIndex != nil,
+		IsOptional:   f.GetProto3Optional(),
 		Message:      msgData,
 	}
 

@@ -84,6 +84,8 @@ type Field struct {
 	// one of fields will have extra method clearXXX,
 	// and the setter accessor will clear out other fields in the group on set
 	IsOneOfField bool
+	// IsOptional indicates the field is flagged as optional.
+	IsOptional bool
 	// Message is the reference back to the parent message
 	Message *Message
 	// OneOfIndex is the index in the one of fields
@@ -98,6 +100,7 @@ func (f *Field) GetType() *TypeInfo {
 		Type:       f.Type,
 		IsRepeated: f.IsRepeated,
 		IsExternal: f.IsExternal,
+		IsOptional: f.IsOptional,
 	}
 }
 

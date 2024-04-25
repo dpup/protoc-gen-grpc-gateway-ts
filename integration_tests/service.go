@@ -88,37 +88,46 @@ func (r *RealCounterService) HTTPGetWithURLSearchParams(ctx context.Context, in 
 		totalC += int(c)
 	}
 	return &HTTPGetWithURLSearchParamsResponse{
-		UrlSearchParamsResult: in.GetA() + in.PostReq.GetB() + in.ExtMsg.GetD() + int32(totalC),
+		UrlSearchParamsResult: in.GetA() + in.GetB().GetB() + in.GetD().GetD() + int32(totalC),
 	}, nil
 }
 
 func (r *RealCounterService) HTTPGetWithZeroValueURLSearchParams(ctx context.Context, in *HTTPGetWithZeroValueURLSearchParamsRequest) (*HTTPGetWithZeroValueURLSearchParamsResponse, error) {
 	var incrementedD []int32
-	for _, d := range in.ZeroValueMsg.GetD() {
+	for _, d := range in.GetC().GetD() {
 		incrementedD = append(incrementedD, d+1)
 	}
 	return &HTTPGetWithZeroValueURLSearchParamsResponse{
 		A: in.GetA(),
 		B: in.GetB() + "hello",
 		ZeroValueMsg: &ZeroValueMsg{
-			C: in.ZeroValueMsg.GetC() + 1,
+			C: in.GetC().GetC() + 1,
 			D: incrementedD,
-			E: !in.ZeroValueMsg.GetE(),
+			E: !in.GetC().GetE(),
 		},
 	}, nil
 }
 
 func (r *RealCounterService) HTTPGetWithOptionalFields(ctx context.Context, in *OptionalFieldsRequest) (*OptionalFieldsResponse, error) {
-	var s string
-	var n int32
 	return &OptionalFieldsResponse{
-		EchoStr: in.Str + "hello",
-		EchoNumber: in.Number + 123,
-		EchoOptStr: in.OptStr,
-		EchoOptNumber: in.OptNumber,
-		NewStr: "",
-		NewNumber: 0,
-		NewOptStr: &s,
-		NewOptNumber: &n,
+		// Empty fields aren't explicity enumerated at all.
+
+		ZeroStr:       "",
+		ZeroNumber:    int32(0),
+		ZeroMsg:       &OptionalFieldsSubMsg{},
+		ZeroOptStr:    p(""),
+		ZeroOptNumber: p(int32(0)),
+		ZeroOptMsg:    &OptionalFieldsSubMsg{},
+
+		DefinedStr:       "hello",
+		DefinedNumber:    int32(123),
+		DefinedMsg:       &OptionalFieldsSubMsg{Str: "hello", OptStr: p("hello")},
+		DefinedOptStr:    p("hello"),
+		DefinedOptNumber: p(int32(123)),
+		DefinedOptMsg:    &OptionalFieldsSubMsg{Str: "hello", OptStr: p("hello")},
 	}, nil
+}
+
+func p[T any](v T) *T {
+	return &v
 }

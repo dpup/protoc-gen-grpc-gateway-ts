@@ -135,4 +135,6 @@ type TypeInfo struct {
 	IsRepeated bool
 	// IsExternal indicates whether this type is external
 	IsExternal bool
+	// Indicates whether the field is optional
+	IsOptional bool
 }

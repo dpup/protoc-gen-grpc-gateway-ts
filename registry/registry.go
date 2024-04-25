@@ -24,8 +24,11 @@ const (
 	FetchModuleDirectory = "fetch_module_directory"
 	// FetchModuleFileName is the file name for the individual fetch module
 	FetchModuleFileName = "fetch_module_filename"
-	// UseProtoNames will make the generator to generate field name the same as defined in the proto
+	// UseProtoNames will generate field names the same as defined in the proto
 	UseProtoNames = "use_proto_names"
+	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
+	// clients to differentiate between zero values and optional values that aren't set.
+	EmitUnpopulated = "emit_unpopulated"
 )
 
 // Registry analyse generation request, spits out the data the the rendering process
@@ -55,6 +58,10 @@ type Registry struct {
 	// UseProtoNames will cause the generator to generate field name the same as defined in the proto
 	UseProtoNames bool
 
+	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
+	// clients to differentiate between zero values and optional values that aren't set.
+	EmitUnpopulated bool
+
 	// TSPackages stores the package name keyed by the TS file name
 	TSPackages map[string]string
 }
@@ -75,22 +82,21 @@ func NewRegistry(paramsMap map[string]string) (*Registry, error) {
 	log.Debugf("found fetch module directory %s", fetchModuleDirectory)
 	log.Debugf("found fetch module name %s", fetchModuleFilename)
 
-	useProtoNames := false
-
-	useProtoNamesVal, ok := paramsMap[UseProtoNames]
-	if ok {
-		// default to true if not disabled specifi
-		useProtoNames = useProtoNamesVal == "true"
-	}
-
 	r := &Registry{
 		Types:                make(map[string]*TypeInformation),
 		TSImportRoots:        tsImportRoots,
 		TSImportRootAliases:  tsImportRootAliases,
 		FetchModuleDirectory: fetchModuleDirectory,
 		FetchModuleFilename:  fetchModuleFilename,
-		UseProtoNames:        useProtoNames,
 		TSPackages:           make(map[string]string),
+	}
+
+	if v, ok := paramsMap[UseProtoNames]; ok {
+		r.UseProtoNames = v == "true"
+	}
+
+	if v, ok := paramsMap[EmitUnpopulated]; ok {
+		r.EmitUnpopulated = v == "true"
 	}
 
 	return r, nil

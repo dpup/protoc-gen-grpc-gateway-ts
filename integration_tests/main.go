@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -41,7 +42,9 @@ func allowCORS(h http.Handler) http.Handler {
 const endpoint = "localhost:9000"
 
 func main() {
-	origName := flag.Bool("orig", false, "tell server to use origin name in jsonpb")
+	useProtoNames := flag.Bool("use_proto_names", false, "tell server to use the original proto name in jsonpb")
+	emitUnpopulated := flag.Bool("emit_unpopulated", false, "tell server to emit zero values")
+
 	flag.Parse()
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -52,14 +55,16 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Printf("Starting server with use_proto_names=%v and emit_unpopulated=%v\n", *useProtoNames, *emitUnpopulated)
+
 	grpcServer := grpc.NewServer()
 	RegisterCounterServiceServer(grpcServer, &RealCounterService{})
 
 	gateway := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{
 		Marshaler: &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   *origName,
-				EmitUnpopulated: true, // Required to support optional fields as expected.
+				UseProtoNames:   *useProtoNames,
+				EmitUnpopulated: *emitUnpopulated,
 			},
 		},
 	}))

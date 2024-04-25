@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import camelCase from 'lodash.camelcase';
 import { pathOr } from 'ramda';
-import { CounterService } from "./service.pb";
+import { CounterService, HttpGetRequest } from "./service.pb";
 import { b64Decode } from './fetch.pb';
 
 function getFieldName(name: string) {
@@ -49,12 +49,13 @@ describe("test grpc-gateway-ts communication", () => {
   })
 
   it('http get check request', async () => {
-    const result = await CounterService.HTTPGet({ [getFieldName('num_to_increase')]: 10 }, { pathPrefix: "http://localhost:8081" })
+    const req = { [getFieldName('num_to_increase')]: 10 } as HttpGetRequest;
+    const result = await CounterService.HTTPGet(req, { pathPrefix: "http://localhost:8081" })
     expect(result.result).to.equal(11)
   })
 
   it('http post body check request with nested body path', async () => {
-    const result = await CounterService.HTTPPostWithNestedBodyPath({ a: 10, req: { b: 15 } }, { pathPrefix: "http://localhost:8081" })
+    const result = await CounterService.HTTPPostWithNestedBodyPath({ a: 10, req: { b: 15 }, c: 0 }, { pathPrefix: "http://localhost:8081" })
     expect(getField(result, 'post_result')).to.equal(25)
   })
 
@@ -79,26 +80,58 @@ describe("test grpc-gateway-ts communication", () => {
   })
 
   it('http get request with url search parameters', async () => {
-    const result = await CounterService.HTTPGetWithURLSearchParams({ a: 10, [getFieldName('post_req')]: { b: 0 }, c: [23, 25], [getFieldName('ext_msg')]: { d: 12 } }, { pathPrefix: "http://localhost:8081" })
+    const result = await CounterService.HTTPGetWithURLSearchParams({ a: 10, b: { b: 0 }, c: [23, 25], d: { d: 12 } }, { pathPrefix: "http://localhost:8081" })
     expect(getField(result, 'url_search_params_result')).to.equal(70)
   })
 
   it('http get request with zero value url search parameters', async () => {
-    const result = await CounterService.HTTPGetWithZeroValueURLSearchParams({ a: "A", b: "", [getFieldName('zero_value_msg')]: { c: 1, d: [1, 0, 2], e: false } }, { pathPrefix: "http://localhost:8081" })
+    const result = await CounterService.HTTPGetWithZeroValueURLSearchParams({ a: "A", b: "", c: { c: 1, d: [1, 0, 2], e: false } }, { pathPrefix: "http://localhost:8081" })
     expect(result).to.deep.equal({ a: "A", b: "hello", [getFieldName('zero_value_msg')]: { c: 2, d: [2, 1, 3], e: true } })
   })
 
   it('http get request with optional fields', async () => {
     const result = await CounterService.HTTPGetWithOptionalFields({}, { pathPrefix: "http://localhost:8081" })
-    // opt fields should always be undefined.
-    expect(result).to.deep.equal({
-      [getFieldName('echo_str')]: "hello",
-      [getFieldName('echo_number')]: 123,
-      // echo_opt_ vars will be undefined.
-      [getFieldName('new_str')]: "",
-      [getFieldName('new_number')]: 0,
-      [getFieldName('new_opt_str')]: "",
-      [getFieldName('new_opt_number')]: 0
-    })
+    const emitUnpopulated = pathOr(false, ['__karma__', 'config', 'emitUnpopulated'], window);
+    if (emitUnpopulated) {
+      // opt fields should always be undefined and zero-values should be present.
+      expect(result).to.deep.equal({
+        [getFieldName('empty_str')]: "",
+        [getFieldName('empty_number')]: 0,
+        [getFieldName('empty_msg')]: null,
+        // empty opt fields will be excluded.
+
+        [getFieldName('zero_str')]: "",
+        [getFieldName('zero_number')]: 0,
+        [getFieldName('zero_msg')]: {"str": ""},
+        [getFieldName('zero_opt_str')]: "",
+        [getFieldName('zero_opt_number')]: 0,
+        [getFieldName('zero_opt_msg')]: {"str": ""},
+
+        [getFieldName('defined_str')]: "hello",
+        [getFieldName('defined_number')]: 123,
+        [getFieldName('defined_msg')]: {"str": "hello", [getFieldName('opt_str')]: "hello"},
+        [getFieldName('defined_opt_str')]: "hello",
+        [getFieldName('defined_opt_number')]: 123,
+        [getFieldName('defined_opt_msg')]: {"str": "hello", [getFieldName('opt_str')]: "hello"},
+      })
+    } else {
+      expect(result).to.deep.equal({
+        // all empty fields will be excluded.
+
+        // only optional zero fields will be included
+        [getFieldName('zero_msg')]: {},
+        [getFieldName('zero_opt_str')]: "",
+        [getFieldName('zero_opt_number')]: 0,
+        [getFieldName('zero_opt_msg')]: {},
+
+        // defined fields are the same as above.
+        [getFieldName('defined_str')]: "hello",
+        [getFieldName('defined_number')]: 123,
+        [getFieldName('defined_msg')]: {"str": "hello", [getFieldName('opt_str')]: "hello"},
+        [getFieldName('defined_opt_str')]: "hello",
+        [getFieldName('defined_opt_number')]: 123,
+        [getFieldName('defined_opt_msg')]: {"str": "hello", [getFieldName('opt_str')]: "hello"},
+      })
+    }
   })
 })

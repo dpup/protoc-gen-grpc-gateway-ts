@@ -35,7 +35,7 @@ const tmpl = `
 {{- if .HasOneOfFields}}
 type Base{{.Name}} = {
 {{- range .NonOneOfFields}}
-  {{fieldName .Name}}?: {{tsType .}}
+  {{tsTypeKey .}}: {{tsTypeDef .}}
 {{- end}}
 }
 
@@ -45,7 +45,7 @@ export type {{.Name}} = Base{{.Name}}
 {{- else -}}
 export type {{.Name}} = {
 {{- range .Fields}}
-  {{fieldName .Name}}?: {{tsType .}}
+  {{tsTypeKey .}}: {{tsTypeDef .}}
 {{- end}}
 }
 {{end}}
@@ -447,6 +447,8 @@ func GetTemplate(r *registry.Registry) *template.Template {
 		"tsType": func(fieldType data.Type) string {
 			return tsType(r, fieldType)
 		},
+		"tsTypeKey":    tsTypeKey(r),
+		"tsTypeDef":    tsTypeDef(r),
 		"renderURL":    renderURL(r),
 		"buildInitReq": buildInitReq,
 		"fieldName":    fieldName(r),
@@ -536,6 +538,33 @@ func include(t *template.Template) func(name string, data interface{}) (string, 
 	}
 }
 
+func tsTypeKey(r *registry.Registry) func(field *data.Field) string {
+	return func(field *data.Field) string {
+		name := fieldName(r)(field.Name)
+		if !r.EmitUnpopulated {
+			// When EmitUnpopulated is false, the gateway will return undefined for
+			// any zero value, so all fields may be undefined.
+			return name + "?"
+		}
+		// When it is false, only optional fields can be undefined, however they are
+		// handled via OneOf style compound types.
+		return name
+	}
+}
+
+func tsTypeDef(r *registry.Registry) func(field *data.Field) string {
+	return func(field *data.Field) string {
+		t := tsType(r, field)
+		info := field.GetType()
+		if r.EmitUnpopulated && (!isScalaType(info.Type) || info.IsRepeated) {
+			// When EmitUnpopulated is true, zero values will be emitted.
+			// Messages and lists may be null.
+			return t + " | null"
+		}
+		return t
+	}
+}
+
 func tsType(r *registry.Registry, fieldType data.Type) string {
 	info := fieldType.GetType()
 	typeInfo, ok := r.Types[info.Type]
@@ -580,7 +609,6 @@ func mapWellKnownType(protoType string) string {
 	case ".google.protobuf.Struct":
 		return "{ [key: string]: StructPBValue }"
 	}
-
 	return ""
 }
 
@@ -595,7 +623,9 @@ func mapScalaType(protoType string) string {
 	case "bytes":
 		return "Uint8Array"
 	}
-
 	return ""
+}
 
+func isScalaType(protoType string) bool {
+	return mapScalaType(protoType) != ""
 }
