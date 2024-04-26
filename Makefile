@@ -31,3 +31,14 @@ integration-tests: integration-tests-gengo
 integration-tests-gengo:
 	go install; \
 	cd integration_tests && ./scripts/gen-server-proto.sh
+
+.PHONY: fmt 
+fmt: fmt-go fmt-ts
+
+.PHONY: fmt-go 
+fmt-go:
+	go fmt ./...
+
+.PHONY: fmt-ts 
+fmt-ts:
+	prettier **/*.ts --write
