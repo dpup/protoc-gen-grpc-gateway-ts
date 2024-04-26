@@ -74,6 +74,9 @@ func (r *Registry) analyseField(fileData *data.File, msgData *data.Message, pack
 	if !fieldData.IsOneOfField {
 		msgData.NonOneOfFields = append(msgData.NonOneOfFields, fieldData)
 	}
+	if fieldData.IsOptional {
+		msgData.OptionalFields = append(msgData.OptionalFields, fieldData)
+	}
 
 	// if it's an external dependencies. store in the file data so that they can be collected when every file's finished
 	if isExternal {
@@ -81,7 +84,8 @@ func (r *Registry) analyseField(fileData *data.File, msgData *data.Message, pack
 	}
 
 	// if it's a one of field. register the field data in the group of the same one of index.
-	if fieldData.IsOneOfField { // one of field
+	// internally, optional fields are modeled as OneOf, however, we don't want to include them here.
+	if fieldData.IsOneOfField && !fieldData.IsOptional {
 		index := f.GetOneofIndex()
 		fieldData.OneOfIndex = index
 		_, ok := msgData.OneOfFieldsGroups[index]
