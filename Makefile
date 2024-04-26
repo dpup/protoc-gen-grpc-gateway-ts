@@ -8,7 +8,8 @@ testdata:
 	go install
 	@export PATH=$$PATH:$$(go env GOPATH)/bin; \
 	cd testdata && protoc -I . \
-	--grpc-gateway-ts_out=logtostderr=true:./ \
+	--grpc-gateway-ts_out ./ \
+	--grpc-gateway-ts_opt logtostderr=true \
 	log.proto environment.proto ./datasource/datasource.proto
 
 .PHONY: lint

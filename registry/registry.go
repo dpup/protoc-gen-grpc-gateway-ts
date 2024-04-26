@@ -13,23 +13,24 @@ import (
 	log "github.com/sirupsen/logrus" // nolint: depguard
 )
 
-const (
+// TSImportRootSeparator separates the ts import root inside ts_import_roots & ts_import_root_aliases
+const TSImportRootSeparator = ";" // nolint: gochecknoglobals
+
+type Options struct {
 	// TSImportRootParamsKey contains the key for common_import_root in parameters
-	TSImportRootParamsKey = "ts_import_roots"
+	TSImportRoots string
 	// TSImportRootAliasParamsKey contains the key for common_import_root_alias in parameters
-	TSImportRootAliasParamsKey = "ts_import_root_aliases"
-	// TSImportRootSeparator separates the ts import root inside ts_import_roots & ts_import_root_aliases
-	TSImportRootSeparator = ";"
+	TSImportRootAliases string
 	// FetchModuleDirectory is the parameter for directory where fetch module will live
-	FetchModuleDirectory = "fetch_module_directory"
+	FetchModuleDirectory string
 	// FetchModuleFileName is the file name for the individual fetch module
-	FetchModuleFileName = "fetch_module_filename"
+	FetchModuleFileName string
 	// UseProtoNames will generate field names the same as defined in the proto
-	UseProtoNames = "use_proto_names"
+	UseProtoNames bool
 	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
 	// clients to differentiate between zero values and optional values that aren't set.
-	EmitUnpopulated = "emit_unpopulated"
-)
+	EmitUnpopulated bool
+}
 
 // Registry analyse generation request, spits out the data the the rendering process
 // it also holds the information about all the types
@@ -52,9 +53,6 @@ type Registry struct {
 	// FetchModuleFilename is the filename for the fetch module
 	FetchModuleFilename string
 
-	// FetchModuleR is the alias for fetch module directory
-	FetchModuleDirectoryAlias string
-
 	// UseProtoNames will cause the generator to generate field name the same as defined in the proto
 	UseProtoNames bool
 
@@ -67,60 +65,32 @@ type Registry struct {
 }
 
 // NewRegistry initialise the registry and return the instance
-func NewRegistry(paramsMap map[string]string) (*Registry, error) {
-	tsImportRoots, tsImportRootAliases, err := getTSImportRootInformation(paramsMap)
+func NewRegistry(opts Options) (*Registry, error) {
+	tsImportRoots, tsImportRootAliases, err := getTSImportRootInformation(opts)
 	log.Debugf("found ts import roots %v", tsImportRoots)
 	log.Debugf("found ts import root aliases %v", tsImportRootAliases)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting common import root information")
 	}
 
-	fetchModuleDirectory, fetchModuleFilename, err := getFetchModuleDirectory(paramsMap)
-	if err != nil {
-		return nil, errors.Wrap(err, "error getting fetch module directory")
-	}
-	log.Debugf("found fetch module directory %s", fetchModuleDirectory)
-	log.Debugf("found fetch module name %s", fetchModuleFilename)
+	log.Debugf("found fetch module directory %s", opts.FetchModuleDirectory)
+	log.Debugf("found fetch module name %s", opts.FetchModuleFileName)
 
-	r := &Registry{
+	return &Registry{
 		Types:                make(map[string]*TypeInformation),
 		TSImportRoots:        tsImportRoots,
 		TSImportRootAliases:  tsImportRootAliases,
-		FetchModuleDirectory: fetchModuleDirectory,
-		FetchModuleFilename:  fetchModuleFilename,
+		FetchModuleDirectory: opts.FetchModuleDirectory,
+		FetchModuleFilename:  opts.FetchModuleFileName,
 		TSPackages:           make(map[string]string),
-	}
-
-	if v, ok := paramsMap[UseProtoNames]; ok {
-		r.UseProtoNames = v == "true"
-	}
-
-	if v, ok := paramsMap[EmitUnpopulated]; ok {
-		r.EmitUnpopulated = v == "true"
-	}
-
-	return r, nil
+		UseProtoNames:        opts.UseProtoNames,
+		EmitUnpopulated:      opts.EmitUnpopulated,
+	}, nil
 }
 
-func getFetchModuleDirectory(paramsMap map[string]string) (fetchModuleDirectory string, fetchModuleFile string, err error) {
-	fetchModuleDirectory, ok := paramsMap[FetchModuleDirectory]
-
-	if !ok {
-		fetchModuleDirectory = "."
-	}
-
-	fetchModuleFile, ok = paramsMap[FetchModuleFileName]
-	if !ok {
-		fetchModuleFile = "fetch.pb.ts"
-	}
-
-	return fetchModuleDirectory, fetchModuleFile, nil
-}
-
-func getTSImportRootInformation(paramsMap map[string]string) ([]string, []string, error) {
-	tsImportRootsValue, ok := paramsMap[TSImportRootParamsKey]
-
-	if !ok {
+func getTSImportRootInformation(opts Options) ([]string, []string, error) {
+	tsImportRootsValue := opts.TSImportRoots
+	if tsImportRootsValue == "" {
 		tsImportRootsValue = "."
 	}
 
@@ -143,16 +113,9 @@ func getTSImportRootInformation(paramsMap map[string]string) ([]string, []string
 		tsImportRoots = append(tsImportRoots, tsImportRoot)
 	}
 
-	tsImportRootAliasValue, ok := paramsMap[TSImportRootAliasParamsKey]
-
-	if !ok {
-		tsImportRootAliasValue = ""
-	}
-
+	tsImportRootAliasValue := opts.TSImportRootAliases
 	splittedImportRootAliases := strings.Split(tsImportRootAliasValue, TSImportRootSeparator)
-
 	tsImportRootAliases := make([]string, numImportRoots)
-
 	for i, ra := range splittedImportRootAliases {
 		if i >= numImportRoots {
 			// in case we have more root alias than root, we will just take the number matches the roots
