@@ -1,6 +1,7 @@
 syntax = 'proto3';
 
 package com.squareup.cash.gap;
+
 import "environment.proto";
 import "datasource/datasource.proto";
 

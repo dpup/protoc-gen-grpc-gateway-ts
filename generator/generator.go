@@ -24,27 +24,10 @@ type TypeScriptGRPCGatewayGenerator struct {
 	EnableStylingCheck bool
 }
 
-const (
-	// EnableStylingCheckOption is the option name for EnableStylingCheck
-	EnableStylingCheckOption = "enable_styling_check"
-)
-
 // New returns an initialised generator
-func New(paramsMap map[string]string) (*TypeScriptGRPCGatewayGenerator, error) {
-	registry, err := registry.NewRegistry(paramsMap)
-	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating a new registry")
-	}
-
-	enableStylingCheck := false
-	enableStylingCheckVal, ok := paramsMap[EnableStylingCheckOption]
-	if ok {
-		// default to true if not disabled specifi
-		enableStylingCheck = enableStylingCheckVal == "true"
-	}
-
+func New(reg *registry.Registry, enableStylingCheck bool) (*TypeScriptGRPCGatewayGenerator, error) {
 	return &TypeScriptGRPCGatewayGenerator{
-		Registry:           registry,
+		Registry:           reg,
 		EnableStylingCheck: enableStylingCheck,
 	}, nil
 }
