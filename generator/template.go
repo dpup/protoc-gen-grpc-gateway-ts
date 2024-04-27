@@ -37,6 +37,9 @@ type Base{{.Name}} = {
 {{- range .NonOneOfFields}}
   {{tsTypeKey .}}: {{tsTypeDef .}}
 {{- end}}
+{{- range .OptionalFields}}
+  {{tsTypeKey .}}: {{tsTypeDef .}}
+{{- end}}
 }
 
 export type {{.Name}} = Base{{.Name}}
@@ -541,9 +544,10 @@ func include(t *template.Template) func(name string, data interface{}) (string, 
 func tsTypeKey(r *registry.Registry) func(field *data.Field) string {
 	return func(field *data.Field) string {
 		name := fieldName(r)(field.Name)
-		if !r.EmitUnpopulated {
+		if !r.EmitUnpopulated || field.IsOptional {
 			// When EmitUnpopulated is false, the gateway will return undefined for
-			// any zero value, so all fields may be undefined.
+			// any zero value, so all fields may be undefined. Optional fields, may
+			// also be undefined if unset.
 			return name + "?"
 		}
 		// When it is false, only optional fields can be undefined, however they are

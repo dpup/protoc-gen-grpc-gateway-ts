@@ -14,6 +14,8 @@ type Message struct {
 	Fields []*Field
 	// NonOneOfFields contains a subset of fields that are not in the one-of groups
 	NonOneOfFields []*Field
+	// OptionalFields contains a subset of fields that are optional
+	OptionalFields []*Field
 	// Message is the nested messages defined inside the message
 	Messages []*Message
 	// OneOfFieldsGroups is the grouped list of one of fields with same index. so that renderer can render the clearing of other fields on set.
