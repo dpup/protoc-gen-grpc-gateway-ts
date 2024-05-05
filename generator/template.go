@@ -58,11 +58,11 @@ export type {{.Name}} = {
 {{- range .Methods}}
 {{- if .ServerStreaming }}
   static {{.Name}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
-    return fm.fetchStreamingRequest<{{tsType .Input}}, {{tsType .Output}}>(` + "`{{renderURL .}}`" + `, entityNotifier, {...initReq, {{buildInitReq .}}})
+    return fm.fetchStreamingRequest<{{tsType .Output}}>(` + "`{{renderURL .}}`" + `, entityNotifier, {...initReq, {{buildInitReq .}}})
   }
 {{- else }}
   static {{.Name}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-    return fm.fetchReq<{{tsType .Input}}, {{tsType .Output}}>(` + "`{{renderURL .}}`" + `, {...initReq, {{buildInitReq .}}})
+    return fm.fetchRequest<{{tsType .Output}}>(` + "`{{renderURL .}}`" + `, {...initReq, {{buildInitReq .}}})
   }
 {{- end}}
 {{- end}}
@@ -121,15 +121,16 @@ const b64 = new Array(64);
 const s64 = new Array(123);
 
 // 65..90, 97..122, 48..57, 43, 47
-for (let i = 0; i < 64;)
-    s64[b64[i] = i < 26 ? i + 65 : i < 52 ? i + 71 : i < 62 ? i - 4 : i - 59 | 43] = i++;
+for (let i = 0; i < 64;) {
+  s64[b64[i] = i < 26 ? i + 65 : i < 52 ? i + 71 : i < 62 ? i - 4 : i - 59 | 43] = i++;
+}
 
 export function b64Encode(buffer: Uint8Array, start: number, end: number): string {
 	let parts: string[] = null;
   const chunk = [];
-  let i = 0, // output index
-    j = 0, // goto index
-    t;     // temporary
+  let i = 0; // output index
+  let j = 0; // goto index
+  let t = 0; // temporary
   while (start < end) {
     const b = buffer[start++];
     switch (j) {
@@ -139,12 +140,12 @@ export function b64Encode(buffer: Uint8Array, start: number, end: number): strin
         j = 1;
         break;
       case 1:
-        chunk[i++] = b64[t | b >> 4];
+        chunk[i++] = b64[t | (b >> 4)];
         t = (b & 15) << 2;
         j = 2;
         break;
       case 2:
-        chunk[i++] = b64[t | b >> 6];
+        chunk[i++] = b64[t | (b >> 6)];
         chunk[i++] = b64[b & 63];
         j = 0;
         break;
@@ -157,12 +158,10 @@ export function b64Encode(buffer: Uint8Array, start: number, end: number): strin
   if (j) {
     chunk[i++] = b64[t];
     chunk[i++] = 61;
-    if (j === 1)
-      chunk[i++] = 61;
+    if (j === 1) chunk[i++] = 61;
   }
   if (parts) {
-    if (i)
-      parts.push(String.fromCharCode.apply(String, chunk.slice(0, i)));
+    if (i) parts.push(String.fromCharCode.apply(String, chunk.slice(0, i)));
     return parts.join("");
   }
   return String.fromCharCode.apply(String, chunk.slice(0, i));
@@ -173,8 +172,8 @@ const invalidEncoding = "invalid encoding";
 export function b64Decode(s: string): Uint8Array {
 	const buffer = [];
 	let offset = 0;
-  let j = 0, // goto index
-      t;     // temporary
+  let j = 0; // goto index
+  let t = 0; // temporary
   for (let i = 0; i < s.length;) {
     let c = s.charCodeAt(i++);
     if (c === 61 && j > 1)
@@ -187,26 +186,26 @@ export function b64Decode(s: string): Uint8Array {
         j = 1;
         break;
       case 1:
-        buffer[offset++] = t << 2 | (c & 48) >> 4;
+        buffer[offset++] = (t << 2) | ((c & 48) >> 4);
         t = c;
         j = 2;
         break;
       case 2:
-        buffer[offset++] = (t & 15) << 4 | (c & 60) >> 2;
+        buffer[offset++] = ((t & 15) << 4) | ((c & 60) >> 2);
         t = c;
         j = 3;
         break;
       case 3:
-        buffer[offset++] = (t & 3) << 6 | c;
+        buffer[offset++] = ((t & 3) << 6) | c;
         j = 0;
         break;
     }
   }
-  if (j === 1)
-      throw Error(invalidEncoding);
+  if (j === 1) throw Error(invalidEncoding);
   return new Uint8Array(buffer);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function b64Test(s: string): boolean {
 	return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s);
 }
@@ -223,7 +222,7 @@ export function replacer(key: any, value: any): any {
   return value;
 }
 
-export function fetchReq<I, O>(path: string, init?: InitReq): Promise<O> {
+export function fetchRequest<R>(path: string, init?: any): Promise<R> {
   const {pathPrefix, ...req} = init || {}
 
   const url = pathPrefix ? ` + "`${pathPrefix}${path}`" + ` : path
@@ -232,11 +231,11 @@ export function fetchReq<I, O>(path: string, init?: InitReq): Promise<O> {
     r
       .json()
       .catch((err) => { throw r; })
-      .then((body: O) => {
+      .then((body: R) => {
         if (!r.ok) { throw body; }
         return body;
       }),
-   ) as Promise<O>;
+   ) as Promise<R>;
 }
 
 // NotifyStreamEntityArrival is a callback that will be called on streaming entity arrival
@@ -247,7 +246,7 @@ export type NotifyStreamEntityArrival<T> = (resp: T) => void
  * it takes NotifyStreamEntityArrival that lets users respond to entity arrival during the call
  * all entities will be returned as an array after the call finishes.
  **/
-export async function fetchStreamingRequest<S, R>(path: string, callback?: NotifyStreamEntityArrival<R>, init?: InitReq) {
+export async function fetchStreamingRequest<R>(path: string, callback?: NotifyStreamEntityArrival<R>, init?: any) {
   const {pathPrefix, ...req} = init || {}
   const url = pathPrefix ?` + "`${pathPrefix}${path}`" + ` : path
   const result = await fetch(url, req)
@@ -324,7 +323,6 @@ function getNewLineDelimitedJSONDecodingStream<T>(): TransformStream<string, T> 
 /**
  * getNotifyEntityArrivalSink takes the NotifyStreamEntityArrival callback and return
  * a sink that will call the callback on entity arrival
- * @param notifyCallback
  */
 function getNotifyEntityArrivalSink<T>(notifyCallback: NotifyStreamEntityArrival<T>) {
   return new WritableStream<T>({
@@ -342,8 +340,6 @@ type FlattenedRequestPayload = Record<string, Primitive | Array<Primitive>>;
  * Checks if given value is a plain object
  * Logic copied and adapted from below source:
  * https://github.com/char0n/ramda-adjunct/blob/master/src/isPlainObj.js
- * @param  {unknown} value
- * @return {boolean}
  */
 function isPlainObject(value: unknown): boolean {
   const isObject =
@@ -365,8 +361,6 @@ function isPlainObject(value: unknown): boolean {
 
 /**
  * Checks if given value is of a primitive type
- * @param  {unknown} value
- * @return {boolean}
  */
 function isPrimitive(value: unknown): boolean {
   return ["string", "number", "boolean"].some(t => typeof value === t);
@@ -376,9 +370,6 @@ function isPrimitive(value: unknown): boolean {
  * Flattens a deeply nested request payload and returns an object
  * with only primitive values and non-empty array of primitive values
  * as per https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
- * @param  {RequestPayload} requestPayload
- * @param  {String} path
- * @return {FlattenedRequestPayload>}
  */
 function flattenRequestPayload<T extends RequestPayload>(
   requestPayload: T,
@@ -412,9 +403,6 @@ function flattenRequestPayload<T extends RequestPayload>(
  * Renders a deeply nested request payload into a string of URL search
  * parameters by first flattening the request payload and then removing keys
  * which are already present in the URL path.
- * @param  {RequestPayload} requestPayload
- * @param  {string[]} urlPathParams
- * @return {string}
  */
 export function renderURLSearchParams<T extends RequestPayload>(
   requestPayload: T,
