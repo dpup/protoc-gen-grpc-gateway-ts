@@ -1,6 +1,6 @@
-# protoc-gen-grpc-gateway-ts
+# TypeScript Client Generator for gRPC Gateway
 
-`protoc-gen-grpc-gateway-ts` is a TypeScript client generator for the [grpc-gateway](https://github.com/dpup/grpc-gateway/) project. It generates idiomatic TypeScript clients that connect the web frontend and golang backend fronted by grpc-gateway.
+`protoc-gen-grpc-gateway-ts` is a TypeScript client generator for the [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway/) project. It generates idiomatic TypeScript clients that connect the web frontend and golang backend fronted by grpc-gateway.
 
 > [!NOTE]
 > The official gRPC ecosystem repository hasn't been updated in since 2022 and there are a number of pending pull requests and issues that would be good to resolve. @seanami and @dpup work for two separate organizations using this fork and intend to breath a bit of life into this project. We hope these changes can be merged upstream at some point.
