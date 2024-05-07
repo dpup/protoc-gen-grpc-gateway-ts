@@ -126,7 +126,7 @@ for (let i = 0; i < 64;) {
 }
 
 export function b64Encode(buffer: Uint8Array, start: number, end: number): string {
-	let parts: string[] = null;
+  let parts: string[] | null = null;
   const chunk = [];
   let i = 0; // output index
   let j = 0; // goto index
