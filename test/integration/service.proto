@@ -124,6 +124,17 @@ message OptionalFieldsSubMsg {
   optional string opt_str = 2;
 }
 
+message Names {
+  string foo_bar = 1;
+  string bazbam = 2;
+  string binbom3 = 3;
+  string tin3tam = 4;
+  string ting3_tang = 5;
+  string king_3kong = 6;
+  string frim_3_fram = 7;
+  string k8s_field = 8;
+}
+
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
   rpc StreamingIncrements(StreamingRequest) returns (stream StreamingResponse);

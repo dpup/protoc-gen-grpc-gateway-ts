@@ -1,28 +1,13 @@
 package test
 
 import (
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
-var projectRoot = ""
-
-func init() {
-	wd, _ := os.Getwd()
-	for !strings.HasSuffix(wd, "protoc-gen-grpc-gateway-ts") {
-		wd = filepath.Dir(wd)
-	}
-	projectRoot = wd
-}
-
 func TestValidOneOfUseCase(t *testing.T) {
-	f, err := createFileWithContent("valid.ts", `
+	createTestFile("valid.ts", `
 import {LogEntryLevel, LogService} from "./log.pb";
 import {DataSource} from "./datasource/datasource.pb"
 import {Environment} from "./environment.pb"
@@ -64,27 +49,19 @@ import {Environment} from "./environment.pb"
   })
 })()
     `)
-	assert.Nil(t, err)
-	defer f.Close()
-	cmd := getTSCCommand()
-	err = cmd.Run()
-	assert.Nil(t, err)
-	assert.Equal(t, 0, cmd.ProcessState.ExitCode())
 
-	err = removeTestFile("valid.ts")
-	assert.Nil(t, err)
-}
+	defer removeTestFile("valid.ts")
 
-func getTSCCommand() *exec.Cmd {
-	cmd := exec.Command("npx", "tsc", "--project", ".", "--noEmit")
-	cmd.Dir = projectRoot + "/test/testdata/"
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	return cmd
+	result := runTsc()
+	assert.Nil(t, result.err)
+	assert.Equal(t, 0, result.exitCode)
+
+	assert.Empty(t, result.stderr)
+	assert.Empty(t, result.stdout)
 }
 
 func TestInvalidOneOfUseCase(t *testing.T) {
-	f, err := createFileWithContent("invalid.ts", `
+	createTestFile("invalid.ts", `
 import {LogService} from "./log.pb";
 import {DataSource} from "./datasource/datasource.pb"
 
@@ -92,36 +69,18 @@ import {DataSource} from "./datasource/datasource.pb"
   const cloudSourceResult = await LogService.FetchLog({
     source: DataSource.Cloud,
     service: "cloudService",
-    application: "cloudApplication"
+    application: "cloudApplication",
   })
 
 })()
     `)
-	assert.Nil(t, err)
-	defer f.Close()
-	cmd := getTSCCommand()
-	err = cmd.Run()
-	assert.NotNil(t, err)
-	assert.NotEqual(t, 0, cmd.ProcessState.ExitCode())
+	defer removeTestFile("invalid.ts")
 
-	err = removeTestFile("invalid.ts")
-	assert.Nil(t, err)
-}
+	result := runTsc()
+	assert.NotNil(t, result.err)
+	assert.NotEqual(t, 0, result.exitCode)
 
-func createFileWithContent(fname, content string) (*os.File, error) {
-	f, err := os.Create(projectRoot + "/test/testdata/" + fname)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error creating file")
-	}
-	defer f.Close()
-	_, err = f.WriteString(content)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error writing content into %s", fname)
-	}
-
-	return f, nil
-}
-
-func removeTestFile(fname string) error {
-	return os.Remove(projectRoot + "/test/testdata/" + fname)
+	assert.Contains(t, result.stderr,
+		"Argument of type '{ source: DataSource.Cloud; service: string; application: "+
+			"string; }' is not assignable to parameter of type 'FetchLogRequest'.")
 }
