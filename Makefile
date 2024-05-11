@@ -7,10 +7,10 @@ all: testdata lint test
 testdata:
 	go install
 	@export PATH=$$PATH:$$(go env GOPATH)/bin; \
-	cd testdata && protoc -I . \
-	--grpc-gateway-ts_out ./ \
+	protoc -I ./test/testdata/. \
+	--grpc-gateway-ts_out ./test/testdata/ \
 	--grpc-gateway-ts_opt logtostderr=true \
-	log.proto environment.proto ./datasource/datasource.proto
+	log.proto environment.proto datasource/datasource.proto
 
 .PHONY: lint
 lint:
@@ -20,17 +20,18 @@ lint:
 test: go-tests integration-tests
 
 .PHONY: go-tests
-go-tests:
+go-tests: gen-go testdata
 	go test ./...
 
 .PHONY: integration-tests
-integration-tests: integration-tests-gengo
-	cd integration_tests && ./scripts/test-ci.sh
+integration-tests: gen-go
+	./scripts/test-ci.sh
 
-.PHONY: integration-tests-gengo
-integration-tests-gengo:
-	go install; \
-	cd integration_tests && ./scripts/gen-server-proto.sh
+.PHONY: gen-go
+gen-go:
+	./scripts/gen-options.sh
+	go install
+	./scripts/gen-server-protos.sh
 
 .PHONY: fmt 
 fmt: fmt-go fmt-ts
@@ -42,3 +43,13 @@ fmt-go:
 .PHONY: fmt-ts 
 fmt-ts:
 	prettier **/*.ts --write
+
+.PHONY: clean
+clean:
+	@rm -r coverage
+	@rm -r test/integration/coverage
+	@rm -r test/integration/tmp
+	@find . -name "*.pb.go" -type f -delete
+	@find . -name "*.pb.gw.go" -type f -delete
+	@find . -name "*.pb.ts" -type f -delete
+	@echo "👷🏽‍♀️ Generated proto files removed"

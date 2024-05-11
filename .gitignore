@@ -1,6 +1,6 @@
 protoc-gen-grpc-gateway-ts
 .vscode
-*/node_modules/*
-*/coverage/*
+node_modules
+coverage
 dist/*
 tmp/

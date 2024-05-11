@@ -1,12 +1,25 @@
 package test
 
 import (
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 )
+
+var projectRoot = ""
+
+func init() {
+	wd, _ := os.Getwd()
+	for !strings.HasSuffix(wd, "protoc-gen-grpc-gateway-ts") {
+		wd = filepath.Dir(wd)
+	}
+	projectRoot = wd
+}
 
 func TestValidOneOfUseCase(t *testing.T) {
 	f, err := createFileWithContent("valid.ts", `
@@ -63,8 +76,8 @@ import {Environment} from "./environment.pb"
 }
 
 func getTSCCommand() *exec.Cmd {
-	cmd := exec.Command("npx", "tsc", "--project", "../testdata/", "--noEmit")
-	cmd.Dir = "../testdata/"
+	cmd := exec.Command("npx", "tsc", "--project", ".", "--noEmit")
+	cmd.Dir = projectRoot + "/test/testdata/"
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd
@@ -96,7 +109,7 @@ import {DataSource} from "./datasource/datasource.pb"
 }
 
 func createFileWithContent(fname, content string) (*os.File, error) {
-	f, err := os.Create("../testdata/" + fname)
+	f, err := os.Create(projectRoot + "/test/testdata/" + fname)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating file")
 	}
@@ -110,5 +123,5 @@ func createFileWithContent(fname, content string) (*os.File, error) {
 }
 
 func removeTestFile(fname string) error {
-	return os.Remove("../testdata/" + fname)
+	return os.Remove(projectRoot + "/test/testdata/" + fname)
 }
