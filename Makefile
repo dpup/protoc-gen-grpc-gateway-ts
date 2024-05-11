@@ -10,7 +10,7 @@ testdata:
 	protoc -I ./test/testdata/. \
 	--grpc-gateway-ts_out ./test/testdata/ \
 	--grpc-gateway-ts_opt logtostderr=true \
-	log.proto environment.proto datasource/datasource.proto
+	log.proto environment.proto names.proto datasource/datasource.proto
 
 .PHONY: lint
 lint:

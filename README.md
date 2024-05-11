@@ -11,6 +11,7 @@
 2. Supports both one way and server side streaming gRPC calls.
 3. POJO request construction guarded by message type definitions, which is way easier compare to `grpc-web`.
 4. No need to use swagger/open api to generate client code for the web.
+5. Fixes inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`.
 
 ### Changes made since the fork
 

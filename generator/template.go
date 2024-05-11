@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Masterminds/sprig"
-	"github.com/iancoleman/strcase"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
@@ -151,7 +150,7 @@ func fieldName(r *registry.Registry) func(name string) string {
 		if r.UseProtoNames {
 			return name
 		}
-		return strcase.ToLowerCamel(name)
+		return JSONCamelCase(name)
 	}
 }
 

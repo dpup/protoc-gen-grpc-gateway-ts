@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package com.squareup.cash.gap;
+
+// See https://github.com/dpup/protoc-gen-grpc-gateway-ts/issues/1
+message FieldsWithNumbers {
+  string k8s_field = 1;
+}
