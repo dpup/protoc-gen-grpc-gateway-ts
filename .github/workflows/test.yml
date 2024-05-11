@@ -32,7 +32,7 @@ jobs:
       - name: Get node dependencies
         run: |
           npm install
-        working-directory: integration_tests
+        working-directory: test/integration
       - name: Run unit test
         run: |
           npm install -g typescript
@@ -40,7 +40,6 @@ jobs:
       - name: Run integration tests
         run: |
           ./scripts/test-ci.sh
-        working-directory: integration_tests
 
   # goreleaser:
   #   runs-on: ubuntu-latest
