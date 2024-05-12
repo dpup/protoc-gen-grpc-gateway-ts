@@ -6,6 +6,8 @@ type Message struct {
 	Nested bool
 	// Name is the name of the Message
 	Name string
+	// Message has been marked as deprecated
+	IsDeprecated bool
 	//FQType is the fully qualified type name for the message itself
 	FQType string
 	// Enums is a list of NestedEnums inside
@@ -88,6 +90,8 @@ type Field struct {
 	IsOneOfField bool
 	// IsOptional indicates the field is flagged as optional.
 	IsOptional bool
+	// IsDeprecated indicates the field is deprecated.
+	IsDeprecated bool
 	// Message is the reference back to the parent message
 	Message *Message
 	// OneOfIndex is the index in the one of fields
