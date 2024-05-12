@@ -36,19 +36,37 @@ export enum {{.Name}} {
 
 {{- define "messages" -}}
 {{- range . -}}
+{{- if .IsDeprecated -}}
+/**
+ * @deprecated This message has been deprecated.
+ */
+{{end -}}
 {{- if .HasOneOfFields -}}
 type Base{{.Name}} = {
 {{- range .NonOneOfFields}}
+  {{if .IsDeprecated -}}
+  /** @deprecated This field has been deprecated. */
+  {{end -}}
   {{tsTypeKey .}}: {{tsTypeDef .}};
 {{- end}}
 {{- range .OptionalFields -}}
+  {{if .IsDeprecated -}}
+  /** @deprecated This field has been deprecated. */
+  {{end -}}
   {{tsTypeKey .}}: {{tsTypeDef .}};
 {{- end}}
 };
 
 export type {{.Name}} = Base{{.Name}}
 {{- range $groupId, $fields := .OneOfFieldsGroups}} &
-  OneOf<{ {{range $index, $field := $fields}}{{fieldName $field.Name}}: {{tsType $field}}{{if (lt (add $index 1) (len $fields))}}; {{end}}{{end}} }>;
+  OneOf<{
+{{- range $index, $field := $fields}}
+    {{if $field.IsDeprecated -}}
+    /** @deprecated This field has been deprecated. */
+    {{end -}}
+    {{fieldName $field.Name}}: {{tsType $field}};
+{{- end}}
+  }>;
 {{- end -}}
 
 {{/* Standard, non oneof messages */}}
@@ -59,6 +77,9 @@ export type {{.Name}} = Base{{.Name}}
 {{- else -}}
   export type {{.Name}} = {
 {{- range .Fields}}
+  {{if .IsDeprecated -}}
+  /** @deprecated This field has been deprecated. */
+  {{end -}}
   {{tsTypeKey .}}: {{tsTypeDef .}};
 {{- end}}
 };

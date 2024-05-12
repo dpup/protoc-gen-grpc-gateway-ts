@@ -135,6 +135,26 @@ message Names {
   string k8s_field = 8;
 }
 
+message DeprecatedMessage {
+  option deprecated = true;
+  string field = 1;
+}
+
+message MessageWithDeprecatedFields {
+  string field = 1;
+  string deprecated_field = 2 [deprecated = true];
+}
+
+message OneofMessageWithDeprecatedFields {
+  string field = 1;
+  string deprecated_field = 2 [deprecated = true];
+  
+  oneof oneof_field {
+    string oneof = 3;
+    string deprecated_oneof = 4 [deprecated = true];
+  }
+}
+
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
   rpc StreamingIncrements(StreamingRequest) returns (stream StreamingResponse);

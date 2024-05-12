@@ -55,6 +55,7 @@ func (r *Registry) analyseMessage(fileData *data.File, packageName, fileName str
 	data := data.NewMessage()
 	data.Name = packageIdentifier
 	data.FQType = fqName
+	data.IsDeprecated = message.GetOptions().GetDeprecated()
 
 	newParents := append(parents, message.GetName())
 

@@ -17,10 +17,11 @@
 1. [Support for well-known wrapper types](https://github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts/pull/50)
 2. Updated to support gRPC gateway v2 and latest protoc-gen-go
 3. Support for proto3 optional fields
-4. Updated to satisfy strict TS and eslint checks
-5. Generator options managed through standard flags
-6. Fixes inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`
-7. Fixes module names when they contain dots or dashes
+4. Support for deprecated message and field annotations
+5. Updated to satisfy strict TS and eslint checks
+6. Generator options managed through standard flags
+7. Fixes inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`
+8. Fixes module names when they contain dots or dashes
 
 ## Getting Started:
 
