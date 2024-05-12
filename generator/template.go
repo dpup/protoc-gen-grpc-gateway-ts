@@ -29,7 +29,7 @@ export enum {{.Name}} {
   {{- range .Values}}
   {{.}} = "{{.}}",
   {{- end}}
-};
+}
 
 {{end -}}
 {{- end -}}
