@@ -11,7 +11,6 @@
 2. Supports both one way and server side streaming gRPC calls.
 3. POJO request construction guarded by message type definitions, which is way easier compare to `grpc-web`.
 4. No need to use swagger/open api to generate client code for the web.
-5. Fixes inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`.
 
 ### Changes made since the fork
 
@@ -20,6 +19,8 @@
 3. Support for proto3 optional fields
 4. Updated to satisfy strict TS and eslint checks
 5. Generator options managed through standard flags
+6. Fixes inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`
+7. Fixes module names when they contain dots or dashes
 
 ## Getting Started:
 
