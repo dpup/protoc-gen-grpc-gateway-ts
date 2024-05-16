@@ -113,6 +113,7 @@ export class {{.Name}} {
 // @ts-nocheck
 {{- else -}}
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/dot-notation */
 {{- end}}
 
 /**
@@ -187,7 +188,7 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 			for _, m := range matches {
 				expToReplace := m[0]
 				fieldName := fieldNameFn(m[1])
-				part := fmt.Sprintf(`${req["%s"]}`, fieldName)
+				part := fmt.Sprintf(`${req.%s}`, fieldName)
 				methodURL = strings.ReplaceAll(methodURL, expToReplace, part)
 				fieldsInPath = append(fieldsInPath, fmt.Sprintf(`"%s"`, fieldName))
 			}
