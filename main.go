@@ -23,7 +23,9 @@ func main() {
 
 func run() error {
 	var useProtoNames = flag.Bool("use_proto_names", false, "field names will match the protofile instead of lowerCamelCase")
+	var useStaticClasses = flag.Bool("use_static_classes", true, "generate static classes instead of functions and a client class")
 	var emitUnpopulated = flag.Bool("emit_unpopulated", false, "expect the gRPC Gateway to send zero values over the wire")
+
 	var fetchModuleDirectory = flag.String("fetch_module_directory", ".", "where shared typescript file should be placed, default $(pwd)")
 	var fetchModuleFilename = flag.String("fetch_module_filename", "fetch.pb.ts", "name of shard typescript file")
 	var tsImportRoots = flag.String("ts_import_roots", "", "defaults to $(pwd)")
@@ -39,8 +41,10 @@ func run() error {
 	req := decodeReq()
 	paramsMap := getParamsMap(req)
 	for k, v := range paramsMap {
-		if err := flag.CommandLine.Set(k, v); err != nil {
-			return fmt.Errorf("error setting flag %s: %w", k, err)
+		if k != "" {
+			if err := flag.CommandLine.Set(k, v); err != nil {
+				return fmt.Errorf("error setting flag %s: %w  [%+v]", k, err, paramsMap)
+			}
 		}
 	}
 
@@ -50,6 +54,8 @@ func run() error {
 
 	reg, err := registry.NewRegistry(registry.Options{
 		UseProtoNames:        *useProtoNames,
+		UseStaticClasses:     *useStaticClasses,
+		EnableStylingCheck:   *enableStylingCheck,
 		EmitUnpopulated:      *emitUnpopulated,
 		FetchModuleDirectory: *fetchModuleDirectory,
 		FetchModuleFileName:  *fetchModuleFilename,
@@ -60,7 +66,7 @@ func run() error {
 		return fmt.Errorf("error instantiating a new registry: %w", err)
 	}
 
-	g, err := generator.New(reg, *enableStylingCheck)
+	g, err := generator.New(reg)
 	if err != nil {
 		return fmt.Errorf("error instantiating a new generator: %w", err)
 	}

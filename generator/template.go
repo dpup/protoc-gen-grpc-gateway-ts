@@ -14,137 +14,25 @@ import (
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
+
+	_ "embed"
 )
 
-const tmpl = `
-{{- define "dependencies" -}}
-{{- range . -}}
-  import * as {{.ModuleIdentifier}} from "{{.SourceFile}}";
-{{end}}
-{{end -}}
+//go:embed service.ts.tmpl
+var serviceTmplScript string
 
-{{- define "enums" -}}
-{{- range .}}
-export enum {{.Name}} {
-  {{- range .Values}}
-  {{.}} = "{{.}}",
-  {{- end}}
-}
+//go:embed fetch_tmpl.ts
+var fetchTmplScript string
 
-{{end -}}
-{{- end -}}
-
-{{- define "messages" -}}
-{{- range . -}}
-{{- if .IsDeprecated -}}
-/**
- * @deprecated This message has been deprecated.
- */
-{{end -}}
-{{- if .HasOneOfFields -}}
-type Base{{.Name}} = {
-{{- range .NonOneOfFields}}
-  {{if .IsDeprecated -}}
-  /** @deprecated This field has been deprecated. */
-  {{end -}}
-  {{tsTypeKey .}}: {{tsTypeDef .}};
-{{- end}}
-{{- range .OptionalFields -}}
-  {{if .IsDeprecated -}}
-  /** @deprecated This field has been deprecated. */
-  {{end -}}
-  {{tsTypeKey .}}: {{tsTypeDef .}};
-{{- end}}
-};
-
-export type {{.Name}} = Base{{.Name}}
-{{- range $groupId, $fields := .OneOfFieldsGroups}} &
-  OneOf<{
-{{- range $index, $field := $fields}}
-    {{if $field.IsDeprecated -}}
-    /** @deprecated This field has been deprecated. */
-    {{end -}}
-    {{fieldName $field.Name}}: {{tsType $field}};
-{{- end}}
-  }>;
-{{- end -}}
-
-{{/* Standard, non oneof messages */}}
-
-{{- else -}}
-{{- if eq (len .Fields) 0 -}}
-  export type {{.Name}} = Record<string, never>;
-{{- else -}}
-  export type {{.Name}} = {
-{{- range .Fields}}
-  {{if .IsDeprecated -}}
-  /** @deprecated This field has been deprecated. */
-  {{end -}}
-  {{tsTypeKey .}}: {{tsTypeDef .}};
-{{- end}}
-};
-    {{- end -}}
-  {{- end}}
-
-{{end -}}
-{{- end}}
-
-{{define "services" -}}
-{{- range . -}}
-export class {{.Name}} {
-{{- range .Methods}}
-{{- if .ServerStreaming }}
-  static {{.Name}}(this:void, req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
-    return fm.fetchStreamingRequest<{{tsType .Output}}>(` + "`{{renderURL .}}`" + `, entityNotifier, {...initReq, {{buildInitReq .}}});
-  }
-{{- else }}
-  static {{.Name}}(this:void, req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-    return fm.fetchRequest<{{tsType .Output}}>(` + "`{{renderURL .}}`" + `, {...initReq, {{buildInitReq .}}});
-  }
-{{- end}}
-{{- end}}
-}
-
-{{end}}
-{{end}}
-
-{{- if not .EnableStylingCheck -}}
+var fetchTmplHeader = `{{- if not .EnableStylingCheck}}
 /* eslint-disable */
 // @ts-nocheck
 {{- else -}}
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
-/* eslint-disable @typescript-eslint/dot-notation */
 {{- end}}
-
-/**
- * This file is a generated Typescript file for GRPC Gateway, DO NOT MODIFY
- */
-
-{{if .Dependencies}}{{- include "dependencies" .StableDependencies -}}{{end}}
-{{- if .NeedsOneOfSupport -}}
-type Absent<T, K extends keyof T> = { [k in Exclude<keyof T, K>]?: undefined };
-
-type OneOf<T> =
-  | { [k in keyof T]?: undefined }
-  | (keyof T extends infer K
-      ? K extends string & keyof T
-        ? { [k in K]: T[K] } & Absent<T, K>
-        : never
-      : never);
-{{end}}
-{{- if .NeedsStructPBSupport}}
-type StructPBValue =
-  | null
-  | boolean
-  | string
-  | number
-  | { [key: string]: StructPBValue }
-  | StructPBValue[];
-{{end}}
-{{- if .Enums}}{{include "enums" .Enums}}{{end}}
-{{- if .Messages}}{{include "messages" .Messages}}{{end}}
-{{- if .Services}}{{include "services" .Services}}{{end}}
 `
+
+var fetchTmpl = fetchTmplHeader + fetchTmplScript
 
 // GetTemplate gets the templates to for the typescript file
 func GetTemplate(r *registry.Registry) *template.Template {
@@ -161,9 +49,10 @@ func GetTemplate(r *registry.Registry) *template.Template {
 		"renderURL":    renderURL(r),
 		"buildInitReq": buildInitReq,
 		"fieldName":    fieldName(r),
+		"functionCase": functionCase,
 	})
 
-	t = template.Must(t.Parse(tmpl))
+	t = template.Must(t.Parse(serviceTmplScript))
 	return t
 }
 

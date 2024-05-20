@@ -11,8 +11,6 @@ import (
 
 // File store the information about rendering a file
 type File struct {
-	// Dependencies is a list of dependencies for the file, which will be rendered at the top of the file as import statements
-	Dependencies []*Dependency
 	// Enums is a list of enums to render, due to the fact that there cannot be any enum defined nested in the class in Typescript.
 	// All Enums will be rendered at the top level
 	Enums []*Enum
@@ -28,14 +26,31 @@ type File struct {
 	TSFileName string
 	// PackageNonScalarType stores the type inside the same packages within the file, which will be used to figure out external dependencies inside the same package (different files)
 	PackageNonScalarType []Type
-	// EnableStylingCheck enables the styling check for the given file
+
+	// TODO: These generator options are shoe-horned into the File struct so that
+	// they can be passed to the template. They should be removed and passed in
+	// separately.
 	EnableStylingCheck bool
+	UseStaticClasses   bool
+
+	// Dependencies is a list of dependencies for the file, which will be rendered at the top of the file as import statements
+	dependencies []*Dependency
 }
 
-// StableDependencies are dependencies in a stable order.
-func (f *File) StableDependencies() []*Dependency {
-	out := make([]*Dependency, len(f.Dependencies))
-	copy(out, f.Dependencies)
+// AddDependency adds a dependency to the file.
+func (f *File) AddDependency(dep *Dependency) {
+	f.dependencies = append(f.dependencies, dep)
+}
+
+// HasDependencies returns true if the file has dependencies.
+func (f *File) HasDependencies() bool {
+	return len(f.dependencies) > 0
+}
+
+// Dependencies returns dependencies in a stable order.
+func (f *File) Dependencies() []*Dependency {
+	out := make([]*Dependency, len(f.dependencies))
+	copy(out, f.dependencies)
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].SourceFile < out[j].SourceFile
 	})
@@ -78,7 +93,7 @@ func (f *File) IsEmpty() bool {
 // NewFile returns an initialised new file
 func NewFile() *File {
 	return &File{
-		Dependencies:           make([]*Dependency, 0),
+		dependencies:           make([]*Dependency, 0),
 		Enums:                  make([]*Enum, 0),
 		Messages:               make([]*Message, 0),
 		Services:               make([]*Service, 0),

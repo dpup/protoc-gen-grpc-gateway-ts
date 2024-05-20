@@ -87,7 +87,7 @@ func main() {
 		}
 	}()
 
-	if err = http.ListenAndServe(":8081", allowCORS(gateway)); err != nil {
+	if err = http.ListenAndServe("localhost:8081", allowCORS(gateway)); err != nil {
 		panic(err)
 	}
 

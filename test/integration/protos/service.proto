@@ -6,6 +6,18 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "msg.proto";
 
+enum reasons {
+  FOO = 0;
+  BAR = 1;
+  BAZ = 2;
+}
+
+enum animals {
+  CAT = 0;
+  DOG = 1;
+  FISH = 2;
+}
+
 message UnaryRequest {
   int32 counter = 1;
 }

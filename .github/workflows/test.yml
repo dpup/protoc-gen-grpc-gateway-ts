@@ -23,23 +23,10 @@ jobs:
           go-version: ^1.22
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
-      - name: Get go dependencies
-        run: |
-          go get
-      - name: Generate test data
-        run: |
-          make testdata
-      - name: Get node dependencies
-        run: |
-          npm install
-        working-directory: test/integration
-      - name: Run unit test
+      - name: Run all the tests
         run: |
           npm install -g typescript
-          go test ./...
-      - name: Run integration tests
-        run: |
-          ./scripts/test-ci.sh
+          make test
 
   # goreleaser:
   #   runs-on: ubuntu-latest

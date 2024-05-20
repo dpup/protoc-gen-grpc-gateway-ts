@@ -3,29 +3,25 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "karma start"
+    "test": "./run.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/chai": "^4.2.14",
-    "@types/google-protobuf": "^3.15.1",
-    "@types/lodash.camelcase": "^4.3.6",
-    "@types/mocha": "^8.0.3",
-    "@types/ramda": "^0.27.32",
-    "chai": "^4.2.0",
-    "google-protobuf": "^3.15.8",
-    "karma": "^6.4.3",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-env-preprocessor": "^0.1.1",
-    "karma-mocha": "^2.0.1",
-    "karma-script-launcher": "^1.0.0",
-    "karma-typescript": "^5.2.0",
+    "@types/chai": "^4.3.16",
+    "@types/google-protobuf": "^3.15.12",
+    "@types/lodash.camelcase": "^4.3.9",
+    "@types/mocha": "^10.0.6",
+    "@types/ramda": "^0.30.0",
+    "@web/dev-server-esbuild": "^1.0.2",
+    "@web/test-runner": "^0.18.2",
+    "chai": "^5.1.1",
+    "google-protobuf": "^3.21.2",
     "lodash.camelcase": "^4.3.0",
     "mocha": "^10.4.0",
-    "ramda": "^0.27.1",
-    "typescript": "^4.0.5"
+    "tree-kill": "^1.2.2",
+    "typescript": "^5.4.5"
   }
 }
