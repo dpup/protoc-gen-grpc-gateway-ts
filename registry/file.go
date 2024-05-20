@@ -77,7 +77,7 @@ func (r *Registry) addFetchModuleDependencies(fileData *data.File) error {
 	}
 
 	log.Debugf("added fetch dependency %s for %s", sourceFile, fileData.TSFileName)
-	fileData.Dependencies = append(fileData.Dependencies, &data.Dependency{
+	fileData.AddDependency(&data.Dependency{
 		ModuleIdentifier: "fm",
 		SourceFile:       sourceFile,
 	})

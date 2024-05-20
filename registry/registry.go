@@ -27,12 +27,18 @@ type Options struct {
 	FetchModuleFileName string
 	// UseProtoNames will generate field names the same as defined in the proto
 	UseProtoNames bool
+	// UseStaticClasses will cause the generator to generate a static class in the form ServiceName.MethodName, which is
+	// the legacy behavior for this generator. If set to false, the generator will generate a client class with methods
+	// as well as static methods exported for each service method.
+	UseStaticClasses bool
 	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
 	// clients to differentiate between zero values and optional values that aren't set.
 	EmitUnpopulated bool
+	// EnableStylingCheck enables both eslint and tsc check for the generated code
+	EnableStylingCheck bool
 }
 
-// Registry analyse generation request, spits out the data the the rendering process
+// Registry analyze generation request, spits out the data the the rendering process
 // it also holds the information about all the types
 type Registry struct {
 	// Types stores the type information keyed by the fully qualified name of a type
@@ -56,9 +62,17 @@ type Registry struct {
 	// UseProtoNames will cause the generator to generate field name the same as defined in the proto
 	UseProtoNames bool
 
+	// UseStaticClasses will cause the generator to generate a static class in the form ServiceName.MethodName, which is
+	// the legacy behavior for this generator. If set to false, the generator will generate a client class with methods
+	// as well as static methods exported for each service method.
+	UseStaticClasses bool
+
 	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
 	// clients to differentiate between zero values and optional values that aren't set.
 	EmitUnpopulated bool
+
+	// EnableStylingCheck enables both eslint and tsc check for the generated code
+	EnableStylingCheck bool
 
 	// TSPackages stores the package name keyed by the TS file name
 	TSPackages map[string]string
@@ -84,7 +98,9 @@ func NewRegistry(opts Options) (*Registry, error) {
 		FetchModuleFilename:  opts.FetchModuleFileName,
 		TSPackages:           make(map[string]string),
 		UseProtoNames:        opts.UseProtoNames,
+		UseStaticClasses:     opts.UseStaticClasses,
 		EmitUnpopulated:      opts.EmitUnpopulated,
+		EnableStylingCheck:   opts.EnableStylingCheck,
 	}, nil
 }
 
@@ -357,7 +373,7 @@ func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*dat
 		}
 
 		for _, dependency := range dependencies {
-			fileData.Dependencies = append(fileData.Dependencies, dependency)
+			fileData.AddDependency(dependency)
 		}
 	}
 

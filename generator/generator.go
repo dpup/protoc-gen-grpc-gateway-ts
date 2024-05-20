@@ -18,17 +18,12 @@ import (
 // TypeScriptGRPCGatewayGenerator is the protobuf generator for typescript
 type TypeScriptGRPCGatewayGenerator struct {
 	Registry *registry.Registry
-	// EnableStylingCheck enables both eslint and tsc check for the generated code
-	// This option will only turn on in integration test to ensure the readability in
-	// the generated code.
-	EnableStylingCheck bool
 }
 
 // New returns an initialised generator
-func New(reg *registry.Registry, enableStylingCheck bool) (*TypeScriptGRPCGatewayGenerator, error) {
+func New(reg *registry.Registry) (*TypeScriptGRPCGatewayGenerator, error) {
 	return &TypeScriptGRPCGatewayGenerator{
-		Registry:           reg,
-		EnableStylingCheck: enableStylingCheck,
+		Registry: reg,
 	}, nil
 }
 
@@ -46,7 +41,9 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	needToGenerateFetchModule := false
 	// feed fileData into rendering process
 	for _, fileData := range filesData {
-		fileData.EnableStylingCheck = t.EnableStylingCheck
+		fileData.EnableStylingCheck = t.Registry.EnableStylingCheck
+		fileData.UseStaticClasses = t.Registry.UseStaticClasses
+
 		if !t.Registry.IsFileToGenerate(fileData.Name) {
 			log.Debugf("file %s is not the file to generate, skipping", fileData.Name)
 			continue
@@ -101,7 +98,7 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFile(fileData *data.File, tmpl 
 func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 	fileName := filepath.Join(t.Registry.FetchModuleDirectory, t.Registry.FetchModuleFilename)
-	err := tmpl.Execute(w, &data.File{EnableStylingCheck: t.EnableStylingCheck})
+	err := tmpl.Execute(w, &data.File{EnableStylingCheck: t.Registry.EnableStylingCheck})
 	if err != nil {
 		return nil, errors.Wrapf(err, "error generating fetch module at %s", fileName)
 	}
