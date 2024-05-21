@@ -34,10 +34,10 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	if err != nil {
 		return nil, errors.Wrap(err, "error analysing proto files")
 	}
-	tmpl := GetTemplate(t.Registry)
+	tmpl := ServiceTemplate(t.Registry)
 	log.Debugf("files to generate %v", req.GetFileToGenerate())
 
-	needToGenerateFetchModule := false
+	requiresFetchModule := false
 	// feed fileData into rendering process
 	for _, fileData := range filesData {
 		if !t.Registry.IsFileToGenerate(fileData.Name) {
@@ -46,7 +46,7 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 		}
 
 		log.Debugf("generating file for %s", fileData.TSFileName)
-		data := &templateData{
+		data := &TemplateData{
 			File:               fileData,
 			EnableStylingCheck: t.Registry.EnableStylingCheck,
 			UseStaticClasses:   t.Registry.UseStaticClasses,
@@ -56,12 +56,11 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 			return nil, errors.Wrap(err, "error generating file")
 		}
 		resp.File = append(resp.File, generated)
-		needToGenerateFetchModule = needToGenerateFetchModule || fileData.Services.NeedsFetchModule()
+		requiresFetchModule = requiresFetchModule || fileData.Services.RequiresFetchModule()
 	}
 
-	if needToGenerateFetchModule {
-		// generate fetch module
-		fetchTmpl := GetFetchModuleTemplate()
+	if requiresFetchModule {
+		fetchTmpl := FetchModuleTemplate()
 		log.Debugf("generate fetch template")
 		generatedFetch, err := t.generateFetchModule(fetchTmpl)
 		if err != nil {
@@ -74,7 +73,7 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	return resp, nil
 }
 
-func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *templateData, tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
+func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *TemplateData, tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 
 	if data.IsEmpty() {
@@ -99,7 +98,7 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *templateData, tmpl *
 func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 	fileName := filepath.Join(t.Registry.FetchModuleDirectory, t.Registry.FetchModuleFilename)
-	err := tmpl.Execute(w, &templateData{
+	err := tmpl.Execute(w, &TemplateData{
 		EnableStylingCheck: t.Registry.EnableStylingCheck,
 		UseStaticClasses:   t.Registry.UseStaticClasses,
 	})

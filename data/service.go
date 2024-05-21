@@ -35,8 +35,8 @@ func (s Services) HasUnaryCallMethod() bool {
 	return false
 }
 
-// NeedsFetchModule returns whether the given services needs fetch module support
-func (s Services) NeedsFetchModule() bool {
+// RequiresFetchModule returns whether the given services needs fetch module support
+func (s Services) RequiresFetchModule() bool {
 	hasServices := len(s) > 0
 	return hasServices && (s.HasUnaryCallMethod() || s.HasServerStreamingMethod())
 }

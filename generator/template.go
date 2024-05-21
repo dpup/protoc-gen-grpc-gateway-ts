@@ -35,14 +35,14 @@ var fetchTmplHeader = `{{- if not .EnableStylingCheck}}
 var fetchTmpl = fetchTmplHeader + fetchTmplScript
 
 // Data object injected into the templates.
-type templateData struct {
+type TemplateData struct {
 	*data.File
 	EnableStylingCheck bool
 	UseStaticClasses   bool
 }
 
-// GetTemplate gets the templates to for the typescript file
-func GetTemplate(r *registry.Registry) *template.Template {
+// ServiceTemplate gets the template for the primary typescript file.
+func ServiceTemplate(r *registry.Registry) *template.Template {
 	t := template.New("file")
 	t = t.Funcs(sprig.TxtFuncMap())
 
@@ -61,6 +61,12 @@ func GetTemplate(r *registry.Registry) *template.Template {
 
 	t = template.Must(t.Parse(serviceTmplScript))
 	return t
+}
+
+// FetchModuleTemplate returns the go template for fetch module.
+func FetchModuleTemplate() *template.Template {
+	t := template.New("fetch")
+	return template.Must(t.Parse(fetchTmpl))
 }
 
 func fieldName(r *registry.Registry) func(name string) string {
@@ -122,12 +128,6 @@ func buildInitReq(method data.Method) string {
 	}
 
 	return strings.Join(fields, ", ")
-}
-
-// GetFetchModuleTemplate returns the go template for fetch module
-func GetFetchModuleTemplate() *template.Template {
-	t := template.New("fetch")
-	return template.Must(t.Parse(fetchTmpl))
 }
 
 // include is the include template functions copied from

@@ -51,7 +51,7 @@ func (r *Registry) analyseFile(f *descriptorpb.FileDescriptorProto) (*data.File,
 }
 
 func (r *Registry) addFetchModuleDependencies(fileData *data.File) error {
-	if !fileData.Services.NeedsFetchModule() {
+	if !fileData.Services.RequiresFetchModule() {
 		log.Debugf("no services found for %s, skipping fetch module", fileData.Name)
 		return nil
 	}
