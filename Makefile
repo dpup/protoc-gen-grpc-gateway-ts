@@ -17,7 +17,7 @@ options/ts_package.pb.go: options/ts_package.proto tools
 	@protoc --go_out=paths=source_relative:./ ./options/*.proto
 
 .PHONY: lint
-lint: ## Runs the go linter.
+lint: integration-test-server ## Runs the go linter.
 	@golangci-lint run 
 
 .PHONY: test
