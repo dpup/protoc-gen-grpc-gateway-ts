@@ -5,3 +5,5 @@ coverage
 dist/*
 tmp/
 *.touchfile
+dist/
+.envrc
