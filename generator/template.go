@@ -34,6 +34,13 @@ var fetchTmplHeader = `{{- if not .EnableStylingCheck}}
 
 var fetchTmpl = fetchTmplHeader + fetchTmplScript
 
+// Data object injected into the templates.
+type templateData struct {
+	*data.File
+	EnableStylingCheck bool
+	UseStaticClasses   bool
+}
+
 // GetTemplate gets the templates to for the typescript file
 func GetTemplate(r *registry.Registry) *template.Template {
 	t := template.New("file")

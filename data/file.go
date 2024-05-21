@@ -26,13 +26,6 @@ type File struct {
 	TSFileName string
 	// PackageNonScalarType stores the type inside the same packages within the file, which will be used to figure out external dependencies inside the same package (different files)
 	PackageNonScalarType []Type
-
-	// TODO: These generator options are shoe-horned into the File struct so that
-	// they can be passed to the template. They should be removed and passed in
-	// separately.
-	EnableStylingCheck bool
-	UseStaticClasses   bool
-
 	// Dependencies is a list of dependencies for the file, which will be rendered at the top of the file as import statements
 	dependencies []*Dependency
 }
