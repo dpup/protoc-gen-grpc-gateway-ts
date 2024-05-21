@@ -1,12 +1,15 @@
 package registry
 
 import (
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-func (r *Registry) analyseEnumType(fileData *data.File, packageName, fileName string, parents []string, enum *descriptorpb.EnumDescriptorProto) {
+func (r *Registry) analyseEnumType(
+	fileData *data.File,
+	packageName, fileName string,
+	parents []string,
+	enum *descriptorpb.EnumDescriptorProto) {
 	packageIdentifier := r.getNameOfPackageLevelIdentifier(parents, enum.GetName())
 	fqName := r.getFullQualifiedName(packageName, parents, enum.GetName())
 	protoType := descriptorpb.FieldDescriptorProto_TYPE_ENUM
@@ -27,5 +30,4 @@ func (r *Registry) analyseEnumType(fileData *data.File, packageName, fileName st
 	}
 
 	fileData.Enums = append(fileData.Enums, enumData)
-
 }

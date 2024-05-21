@@ -1,15 +1,18 @@
 package registry
 
 import (
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-func (r *Registry) analyseMessage(fileData *data.File, packageName, fileName string, parents []string, message *descriptorpb.DescriptorProto) {
+func (r *Registry) analyseMessage(
+	fileData *data.File,
+	packageName, fileName string,
+	parents []string,
+	message *descriptorpb.DescriptorProto) {
 	packageIdentifier := r.getNameOfPackageLevelIdentifier(parents, message.GetName())
 
-	fqName := r.getFullQualifiedName(packageName, parents, message.GetName()) // "." + packageName + "." + parentsPrefix + message.GetName()
+	fqName := r.getFullQualifiedName(packageName, parents, message.GetName())
 	protoType := descriptorpb.FieldDescriptorProto_TYPE_MESSAGE
 
 	typeInfo := &TypeInformation{
@@ -42,13 +45,12 @@ func (r *Registry) analyseMessage(fileData *data.File, packageName, fileName str
 						IsExternal: r.isExternalDependenciesOutsidePackage(f.GetTypeName(), packageName),
 					}
 				}
-
 			}
+
 			fileData.TrackPackageNonScalarType(typeInfo.KeyType)
 			fileData.TrackPackageNonScalarType(typeInfo.ValueType)
 			// no need to add a map type into
 			return
-
 		}
 	}
 
@@ -57,7 +59,9 @@ func (r *Registry) analyseMessage(fileData *data.File, packageName, fileName str
 	data.FQType = fqName
 	data.IsDeprecated = message.GetOptions().GetDeprecated()
 
-	newParents := append(parents, message.GetName())
+	newParents := []string{}
+	newParents = append(newParents, parents...)
+	newParents = append(newParents, message.GetName())
 
 	// handle enums, by pulling the enums out to the top level
 	for _, enum := range message.EnumType {

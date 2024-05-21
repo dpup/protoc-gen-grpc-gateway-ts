@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus" // nolint: depguard
+	log "github.com/sirupsen/logrus" //nolint: depguard // not sure, will remove
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
-// TSImportRootSeparator separates the ts import root inside ts_import_roots & ts_import_root_aliases
-const TSImportRootSeparator = ";" // nolint: gochecknoglobals
+// importRootSeparator separates the ts import root inside ts_import_roots & ts_import_root_aliases.
+const importRootSeparator = ";"
 
 type Options struct {
 	// TSImportRootParamsKey contains the key for common_import_root in parameters
@@ -39,27 +39,30 @@ type Options struct {
 }
 
 // Registry analyze generation request, spits out the data the the rendering process
-// it also holds the information about all the types
+// it also holds the information about all the types.
 type Registry struct {
 	Options
 
 	// Types stores the type information keyed by the fully qualified name of a type
 	Types map[string]*TypeInformation
 
-	// FilesToGenerate contains a list of actual file to generate, different from all the files from the request, some of which are import files
+	// FilesToGenerate contains a list of actual file to generate, different from all the files from
+	// the request, some of which are import files
 	FilesToGenerate map[string]bool
 
-	// TSImportRoots represents the ts import root for the generator to figure out required import path, will default to cwd
+	// TSImportRoots represents the ts import root for the generator to figure out required import
+	// path, will default to cwd
 	TSImportRoots []string
 
-	// TSImportRootAliases if not empty will substitutes the common import root when writing the import into the js file
+	// TSImportRootAliases if not empty will substitutes the common import root when writing the
+	// import into the js file
 	TSImportRootAliases []string
 
 	// TSPackages stores the package name keyed by the TS file name
 	TSPackages map[string]string
 }
 
-// NewRegistry initialise the registry and return the instance
+// NewRegistry initialise the registry and return the instance.
 func NewRegistry(opts Options) (*Registry, error) {
 	tsImportRoots, tsImportRootAliases, err := getTSImportRootInformation(opts)
 	log.Debugf("found ts import roots %v", tsImportRoots)
@@ -86,7 +89,7 @@ func getTSImportRootInformation(opts Options) ([]string, []string, error) {
 		tsImportRootsValue = "."
 	}
 
-	splittedImportRoots := strings.Split(tsImportRootsValue, TSImportRootSeparator)
+	splittedImportRoots := strings.Split(tsImportRootsValue, importRootSeparator)
 	numImportRoots := len(splittedImportRoots)
 
 	tsImportRoots := make([]string, 0, numImportRoots)
@@ -106,7 +109,7 @@ func getTSImportRootInformation(opts Options) ([]string, []string, error) {
 	}
 
 	tsImportRootAliasValue := opts.TSImportRootAliases
-	splittedImportRootAliases := strings.Split(tsImportRootAliasValue, TSImportRootSeparator)
+	splittedImportRootAliases := strings.Split(tsImportRootAliasValue, importRootSeparator)
 	tsImportRootAliases := make([]string, numImportRoots)
 	for i, ra := range splittedImportRootAliases {
 		if i >= numImportRoots {
@@ -114,21 +117,23 @@ func getTSImportRootInformation(opts Options) ([]string, []string, error) {
 			break
 		}
 		tsImportRootAliases[i] = ra
-
 	}
 
 	return tsImportRoots, tsImportRootAliases, nil
 }
 
-// TypeInformation store the information about a given type
+// TypeInformation store the information about a given type.
 type TypeInformation struct {
-	// Fully qualified name of the type, it starts with `.` and followed by packages and the nested structure path.
+	// Fully qualified name of the type, it starts with `.` and followed by packages and the nested
+	// structure path.
 	FullyQualifiedName string
 	// Package is the package of the type it belongs to
 	Package string
-	// Files is the file of the type belongs to, this is important in Typescript as modules is the namespace for types defined inside
+	// Files is the file of the type belongs to, this is important in Typescript as modules is the
+	// namespace for types defined inside
 	File string
-	// ModuleIdentifier is the identifier of the type inside the package, this will be useful for enum and nested enum.
+	// ModuleIdentifier is the identifier of the type inside the package, this will be useful for enum
+	// and nested enum.
 	PackageIdentifier string
 	// LocalIdentifier is the identifier inside the types local scope
 	LocalIdentifier string
@@ -142,14 +147,14 @@ type TypeInformation struct {
 	ValueType *data.MapEntryType
 }
 
-// IsFileToGenerate contains the file to be generated in the request
+// IsFileToGenerate contains the file to be generated in the request.
 func (r *Registry) IsFileToGenerate(name string) bool {
 	result, ok := r.FilesToGenerate[name]
 	return ok && result
 }
 
-// Analyse analyses the the file inputs, stores types information and spits out the rendering data
-func (r *Registry) Analyse(req *plugin.CodeGeneratorRequest) (map[string]*data.File, error) {
+// Analyse analyses the the file inputs, stores types information and spits out the rendering data.
+func (r *Registry) Analyse(req *pluginpb.CodeGeneratorRequest) (map[string]*data.File, error) {
 	r.FilesToGenerate = make(map[string]bool)
 	for _, f := range req.GetFileToGenerate() {
 		r.FilesToGenerate[f] = true
@@ -183,7 +188,8 @@ func (r *Registry) getNameOfPackageLevelIdentifier(parents []string, name string
 }
 
 func (r *Registry) getFullQualifiedName(packageName string, parents []string, name string) string {
-	namesToConcat := make([]string, 0, 2+len(parents))
+	additionalNames := 2
+	namesToConcat := make([]string, 0, additionalNames+len(parents))
 
 	if packageName != "" {
 		namesToConcat = append(namesToConcat, packageName)
@@ -196,17 +202,18 @@ func (r *Registry) getFullQualifiedName(packageName string, parents []string, na
 	namesToConcat = append(namesToConcat, name)
 
 	return "." + strings.Join(namesToConcat, ".")
-
 }
 
 func (r *Registry) isExternalDependenciesOutsidePackage(fqTypeName, packageName string) bool {
 	return strings.Index(fqTypeName, "."+packageName) != 0 && strings.Index(fqTypeName, ".") == 0
 }
 
-// findRootAliasForPath iterate through all ts_import_roots and try to find an alias with the first matching the ts_import_root
-func (r *Registry) findRootAliasForPath(predicate func(root string) (bool, error)) (foundAtRoot, alias string, err error) {
-	foundAtRoot = ""
-	alias = ""
+// findRootAliasForPath iterate through all ts_import_roots and try to find an alias with the first
+// matching the ts_import_root.
+func (r *Registry) findRootAliasForPath(
+	predicate func(root string) (bool, error)) (string, string, error) {
+	foundAtRoot := ""
+	alias := ""
 	for i, root := range r.TSImportRoots {
 		absRoot, err := filepath.Abs(root)
 		if err != nil {
@@ -235,15 +242,16 @@ func (r *Registry) findRootAliasForPath(predicate func(root string) (bool, error
 
 // getSourceFileForImport will return source file for import use.
 // if alias is provided it will try to replace the absolute root with target's absolute path with alias
-// if no alias then it will try to return a relative path to the source file
+// if no alias then it will try to return a relative path to the source file.
 func (r *Registry) getSourceFileForImport(source, target, root, alias string) (string, error) {
-	ret := ""
+	var ret string
 	absTarget, err := filepath.Abs(target)
 	if err != nil {
 		return "", errors.Wrapf(err, "error looking up absolute path for target %s", target)
 	}
 
-	if alias != "" { // if an alias has been provided, that means there's no need to get relative path
+	// if an alias has been provided, that means there's no need to get relative path
+	if alias != "" {
 		absRoot, err := filepath.Abs(root)
 		if err != nil {
 			return "", errors.Wrapf(err, "error looking up absolute path for root %s", root)
@@ -266,7 +274,8 @@ func (r *Registry) getSourceFileForImport(source, target, root, alias string) (s
 		slashPath := filepath.ToSlash(ret)
 		log.Debugf("got relative path %s for %s", target, slashPath)
 
-		if !strings.HasPrefix(slashPath, "../") { // sub directory will not have relative path ./, if this happens, prepend one
+		// sub directory will not have relative path ./, if this happens, prepend one
+		if !strings.HasPrefix(slashPath, "../") {
 			ret = filepath.FromSlash("./" + slashPath)
 		}
 
@@ -280,7 +289,6 @@ func (r *Registry) getSourceFileForImport(source, target, root, alias string) (s
 	}
 
 	return ret, nil
-
 }
 
 func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*data.File) error {
@@ -308,7 +316,7 @@ func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*dat
 				// Referencing types will be [ModuleIdentifier].[PackageIdentifier]
 				base := fileData.TSFileName
 				target := data.GetTSFileName(typeInfo.File)
-				sourceFile := ""
+				var sourceFile string
 				if pkg, ok := r.TSPackages[target]; ok {
 					log.Debugf("package import override %s has been found for file %s", pkg, target)
 					sourceFile = pkg
@@ -320,13 +328,9 @@ func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*dat
 							if os.IsNotExist(err) {
 								return false, nil
 							}
-
 							return false, err
-
-						} else {
-							return true, nil
 						}
-
+						return true, nil
 					})
 					if err != nil {
 						return errors.WithStack(err)
