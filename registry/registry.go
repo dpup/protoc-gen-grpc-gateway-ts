@@ -23,8 +23,8 @@ type Options struct {
 	TSImportRootAliases string
 	// FetchModuleDirectory is the parameter for directory where fetch module will live
 	FetchModuleDirectory string
-	// FetchModuleFileName is the file name for the individual fetch module
-	FetchModuleFileName string
+	// FetchModuleFilename is the file name for the individual fetch module
+	FetchModuleFilename string
 	// UseProtoNames will generate field names the same as defined in the proto
 	UseProtoNames bool
 	// UseStaticClasses will cause the generator to generate a static class in the form ServiceName.MethodName, which is
@@ -41,6 +41,8 @@ type Options struct {
 // Registry analyze generation request, spits out the data the the rendering process
 // it also holds the information about all the types
 type Registry struct {
+	Options
+
 	// Types stores the type information keyed by the fully qualified name of a type
 	Types map[string]*TypeInformation
 
@@ -52,27 +54,6 @@ type Registry struct {
 
 	// TSImportRootAliases if not empty will substitutes the common import root when writing the import into the js file
 	TSImportRootAliases []string
-
-	// FetchModuleDirectory is the directory to place fetch module file
-	FetchModuleDirectory string
-
-	// FetchModuleFilename is the filename for the fetch module
-	FetchModuleFilename string
-
-	// UseProtoNames will cause the generator to generate field name the same as defined in the proto
-	UseProtoNames bool
-
-	// UseStaticClasses will cause the generator to generate a static class in the form ServiceName.MethodName, which is
-	// the legacy behavior for this generator. If set to false, the generator will generate a client class with methods
-	// as well as static methods exported for each service method.
-	UseStaticClasses bool
-
-	// EmitUnpopulated mirrors the grpc gateway protojson configuration of the same name and allows
-	// clients to differentiate between zero values and optional values that aren't set.
-	EmitUnpopulated bool
-
-	// EnableStylingCheck enables both eslint and tsc check for the generated code
-	EnableStylingCheck bool
 
 	// TSPackages stores the package name keyed by the TS file name
 	TSPackages map[string]string
@@ -88,19 +69,14 @@ func NewRegistry(opts Options) (*Registry, error) {
 	}
 
 	log.Debugf("found fetch module directory %s", opts.FetchModuleDirectory)
-	log.Debugf("found fetch module name %s", opts.FetchModuleFileName)
+	log.Debugf("found fetch module name %s", opts.FetchModuleFilename)
 
 	return &Registry{
-		Types:                make(map[string]*TypeInformation),
-		TSImportRoots:        tsImportRoots,
-		TSImportRootAliases:  tsImportRootAliases,
-		FetchModuleDirectory: opts.FetchModuleDirectory,
-		FetchModuleFilename:  opts.FetchModuleFileName,
-		TSPackages:           make(map[string]string),
-		UseProtoNames:        opts.UseProtoNames,
-		UseStaticClasses:     opts.UseStaticClasses,
-		EmitUnpopulated:      opts.EmitUnpopulated,
-		EnableStylingCheck:   opts.EnableStylingCheck,
+		Options:             opts,
+		Types:               make(map[string]*TypeInformation),
+		TSPackages:          make(map[string]string),
+		TSImportRoots:       tsImportRoots,
+		TSImportRootAliases: tsImportRootAliases,
 	}, nil
 }
 

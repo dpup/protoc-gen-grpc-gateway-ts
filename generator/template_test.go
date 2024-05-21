@@ -27,7 +27,7 @@ func TestFieldName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			r := &registry.Registry{UseProtoNames: tt.useProtoNames}
+			r := &registry.Registry{Options: registry.Options{UseProtoNames: tt.useProtoNames}}
 			fn := fieldName(r)
 			if got := fn(tt.input); got != tt.want {
 				assert.Equal(t, got, tt.want, "fieldName(%s) = %s, want %s", tt.input, got, tt.want)

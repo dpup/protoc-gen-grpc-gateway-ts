@@ -58,7 +58,7 @@ func run() error {
 		EnableStylingCheck:   *enableStylingCheck,
 		EmitUnpopulated:      *emitUnpopulated,
 		FetchModuleDirectory: *fetchModuleDirectory,
-		FetchModuleFileName:  *fetchModuleFilename,
+		FetchModuleFilename:  *fetchModuleFilename,
 		TSImportRoots:        *tsImportRoots,
 		TSImportRootAliases:  *tsImportRootAliases,
 	})
