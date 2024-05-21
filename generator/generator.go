@@ -10,7 +10,6 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	log "github.com/sirupsen/logrus" // nolint: depguard
 
-	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
 	"github.com/pkg/errors"
 )
@@ -41,16 +40,18 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	needToGenerateFetchModule := false
 	// feed fileData into rendering process
 	for _, fileData := range filesData {
-		fileData.EnableStylingCheck = t.Registry.EnableStylingCheck
-		fileData.UseStaticClasses = t.Registry.UseStaticClasses
-
 		if !t.Registry.IsFileToGenerate(fileData.Name) {
 			log.Debugf("file %s is not the file to generate, skipping", fileData.Name)
 			continue
 		}
 
 		log.Debugf("generating file for %s", fileData.TSFileName)
-		generated, err := t.generateFile(fileData, tmpl)
+		data := &templateData{
+			File:               fileData,
+			EnableStylingCheck: t.Registry.EnableStylingCheck,
+			UseStaticClasses:   t.Registry.UseStaticClasses,
+		}
+		generated, err := t.generateFile(data, tmpl)
 		if err != nil {
 			return nil, errors.Wrap(err, "error generating file")
 		}
@@ -73,19 +74,19 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	return resp, nil
 }
 
-func (t *TypeScriptGRPCGatewayGenerator) generateFile(fileData *data.File, tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
+func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *templateData, tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 
-	if fileData.IsEmpty() {
+	if data.IsEmpty() {
 		w.Write([]byte(fmt.Sprintln("export default {}")))
 	} else {
-		err := tmpl.Execute(w, fileData)
+		err := tmpl.Execute(w, data)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error generating ts file for %s", fileData.Name)
+			return nil, errors.Wrapf(err, "error generating ts file for %s", data.Name)
 		}
 	}
 
-	fileName := fileData.TSFileName
+	fileName := data.TSFileName
 	content := strings.TrimSpace(w.String())
 
 	return &plugin.CodeGeneratorResponse_File{
@@ -98,7 +99,10 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFile(fileData *data.File, tmpl 
 func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 	fileName := filepath.Join(t.Registry.FetchModuleDirectory, t.Registry.FetchModuleFilename)
-	err := tmpl.Execute(w, &data.File{EnableStylingCheck: t.Registry.EnableStylingCheck})
+	err := tmpl.Execute(w, &templateData{
+		EnableStylingCheck: t.Registry.EnableStylingCheck,
+		UseStaticClasses:   t.Registry.UseStaticClasses,
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "error generating fetch module at %s", fileName)
 	}
