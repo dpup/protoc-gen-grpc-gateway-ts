@@ -1,57 +1,62 @@
 package registry
 
 import (
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-// getFieldType generates an intermediate type and leave the rendering logic to choose what to render
+// getFieldType generates an intermediate type and leave the rendering logic to
+// choose what to render.
 func (r *Registry) getFieldType(f *descriptorpb.FieldDescriptorProto) string {
-	typeName := ""
-	if f.Type != nil {
-		switch *f.Type {
-		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE, descriptorpb.FieldDescriptorProto_TYPE_ENUM:
-			typeName = f.GetTypeName()
-		case descriptorpb.FieldDescriptorProto_TYPE_STRING:
-			typeName = "string"
-		case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
-			typeName = "bool"
-		case descriptorpb.FieldDescriptorProto_TYPE_BYTES:
-			typeName = "bytes"
-		case descriptorpb.FieldDescriptorProto_TYPE_FLOAT:
-			typeName = "float"
-		case descriptorpb.FieldDescriptorProto_TYPE_DOUBLE:
-			typeName = "double"
-		case descriptorpb.FieldDescriptorProto_TYPE_FIXED32:
-			typeName = "fixed32"
-		case descriptorpb.FieldDescriptorProto_TYPE_SFIXED32:
-			typeName = "sfixed32"
-		case descriptorpb.FieldDescriptorProto_TYPE_INT32:
-			typeName = "int32"
-		case descriptorpb.FieldDescriptorProto_TYPE_SINT32:
-			typeName = "sint32"
-		case descriptorpb.FieldDescriptorProto_TYPE_UINT32:
-			typeName = "uint32"
-		case descriptorpb.FieldDescriptorProto_TYPE_FIXED64:
-			typeName = "fixed64"
-		case descriptorpb.FieldDescriptorProto_TYPE_SFIXED64:
-			typeName = "sfixed64"
-		case descriptorpb.FieldDescriptorProto_TYPE_INT64:
-			typeName = "int64"
-		case descriptorpb.FieldDescriptorProto_TYPE_SINT64:
-			typeName = "sint64"
-		case descriptorpb.FieldDescriptorProto_TYPE_UINT64:
-			typeName = "uint64"
-		}
+	if f.Type == nil {
+		return ""
 	}
-
-	return typeName
+	switch *f.Type {
+	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE,
+		descriptorpb.FieldDescriptorProto_TYPE_ENUM,
+		descriptorpb.FieldDescriptorProto_TYPE_GROUP:
+		return f.GetTypeName()
+	case descriptorpb.FieldDescriptorProto_TYPE_STRING:
+		return "string"
+	case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
+		return "bool"
+	case descriptorpb.FieldDescriptorProto_TYPE_BYTES:
+		return "bytes"
+	case descriptorpb.FieldDescriptorProto_TYPE_FLOAT:
+		return "float"
+	case descriptorpb.FieldDescriptorProto_TYPE_DOUBLE:
+		return "double"
+	case descriptorpb.FieldDescriptorProto_TYPE_FIXED32:
+		return "fixed32"
+	case descriptorpb.FieldDescriptorProto_TYPE_SFIXED32:
+		return "sfixed32"
+	case descriptorpb.FieldDescriptorProto_TYPE_INT32:
+		return "int32"
+	case descriptorpb.FieldDescriptorProto_TYPE_SINT32:
+		return "sint32"
+	case descriptorpb.FieldDescriptorProto_TYPE_UINT32:
+		return "uint32"
+	case descriptorpb.FieldDescriptorProto_TYPE_FIXED64:
+		return "fixed64"
+	case descriptorpb.FieldDescriptorProto_TYPE_SFIXED64:
+		return "sfixed64"
+	case descriptorpb.FieldDescriptorProto_TYPE_INT64:
+		return "int64"
+	case descriptorpb.FieldDescriptorProto_TYPE_SINT64:
+		return "sint64"
+	case descriptorpb.FieldDescriptorProto_TYPE_UINT64:
+		return "uint64"
+	default:
+		return ""
+	}
 }
 
-func (r *Registry) analyseField(fileData *data.File, msgData *data.Message, packageName string, f *descriptorpb.FieldDescriptorProto) {
+func (r *Registry) analyseField(
+	fileData *data.File,
+	msgData *data.Message,
+	packageName string,
+	f *descriptorpb.FieldDescriptorProto) {
 	fqTypeName := r.getFieldType(f)
-
 	isExternal := r.isExternalDependenciesOutsidePackage(fqTypeName, packageName)
 
 	fieldData := &data.Field{

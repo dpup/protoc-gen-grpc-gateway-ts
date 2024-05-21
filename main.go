@@ -22,23 +22,26 @@ func main() {
 }
 
 func run() error {
-	var useProtoNames = flag.Bool("use_proto_names", false, "field names will match the protofile instead of lowerCamelCase")
-	var useStaticClasses = flag.Bool("use_static_classes", true, "generate static classes instead of functions and a client class")
-	var emitUnpopulated = flag.Bool("emit_unpopulated", false, "expect the gRPC Gateway to send zero values over the wire")
+	var (
+		useProtoNames    = flag.Bool("use_proto_names", false, "field names will match the protofile instead of lowerCamelCase")
+		useStaticClasses = flag.Bool("use_static_classes", true, "generate static classes instead of functions and a client class")
+		emitUnpopulated  = flag.Bool("emit_unpopulated", false, "expect the gRPC Gateway to send zero values over the wire")
 
-	var fetchModuleDirectory = flag.String("fetch_module_directory", ".", "where shared typescript file should be placed, default $(pwd)")
-	var fetchModuleFilename = flag.String("fetch_module_filename", "fetch.pb.ts", "name of shard typescript file")
-	var tsImportRoots = flag.String("ts_import_roots", "", "defaults to $(pwd)")
-	var tsImportRootAliases = flag.String("ts_import_root_aliases", "", "use import aliases instead of relative paths")
+		fetchModuleDirectory = flag.String("fetch_module_directory", ".", "where shared typescript file should be placed, default $(pwd)")
+		fetchModuleFilename  = flag.String("fetch_module_filename", "fetch.pb.ts", "name of shard typescript file")
+		tsImportRoots        = flag.String("ts_import_roots", "", "defaults to $(pwd)")
+		tsImportRootAliases  = flag.String("ts_import_root_aliases", "", "use import aliases instead of relative paths")
 
-	var enableStylingCheck = flag.Bool("enable_styling_check", false, "TODO")
+		enableStylingCheck = flag.Bool("enable_styling_check", false, "TODO")
 
-	var logtostderr = flag.Bool("logtostderr", false, "turn on logging to stderr")
-	var loglevel = flag.String("loglevel", "info", "defines the logging level. Values are debug, info, warn, error")
+		logtostderr = flag.Bool("logtostderr", false, "turn on logging to stderr")
+		loglevel    = flag.String("loglevel", "info", "defines the logging level. Values are debug, info, warn, error")
+	)
 
 	flag.Parse()
 
 	req := decodeReq()
+
 	paramsMap := getParamsMap(req)
 	for k, v := range paramsMap {
 		if k != "" {
@@ -70,15 +73,19 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("error instantiating a new generator: %w", err)
 	}
+
 	log.Debug("Starts generating file request")
+
 	resp, err := g.Generate(req)
 	if err != nil {
 		return fmt.Errorf("error generating output: %w", err)
 	}
+
 	features := uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 	resp.SupportedFeatures = &features
 
 	encodeResponse(resp)
+
 	log.Debug("generation finished")
 
 	return nil
@@ -92,11 +99,11 @@ func configureLogging(enableLogging bool, levelStr string) error {
 		log.SetOutput(os.Stderr)
 		log.Debugf("Logging configured completed, logging has been enabled")
 		if levelStr != "" {
-			level, err := log.ParseLevel(levelStr)
-			if err != nil {
+			if level, err := log.ParseLevel(levelStr); err != nil {
 				return fmt.Errorf("error parsing log level %s: %s", levelStr, err)
+			} else {
+				log.SetLevel(level)
 			}
-			log.SetLevel(level)
 		} else {
 			log.SetLevel(log.InfoLevel)
 		}

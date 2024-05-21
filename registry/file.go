@@ -6,10 +6,10 @@ import (
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/options"
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus" // nolint: depguard
+	log "github.com/sirupsen/logrus" //nolint: depguard // Need to remove
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 func (r *Registry) analyseFile(f *descriptorpb.FileDescriptorProto) (*data.File, error) {
@@ -21,7 +21,7 @@ func (r *Registry) analyseFile(f *descriptorpb.FileDescriptorProto) (*data.File,
 	fileData.Name = fileName
 	fileData.TSFileName = data.GetTSFileName(fileName)
 	if proto.HasExtension(f.Options, options.E_TsPackage) {
-		r.TSPackages[fileData.TSFileName] = proto.GetExtension(f.Options, options.E_TsPackage).(string)
+		r.TSPackages[fileData.TSFileName], _ = proto.GetExtension(f.Options, options.E_TsPackage).(string)
 	}
 
 	// analyse enums
@@ -63,7 +63,6 @@ func (r *Registry) addFetchModuleDependencies(fileData *data.File) error {
 
 	foundAtRoot, alias, err := r.findRootAliasForPath(func(absRoot string) (bool, error) {
 		return strings.HasPrefix(absDir, absRoot), nil
-
 	})
 	if err != nil {
 		return errors.Wrapf(err, "error looking up root alias for fetch module directory %s", r.FetchModuleDirectory)
@@ -101,7 +100,8 @@ func (r *Registry) analyseFilePackageTypeDependencies(fileData *data.File) {
 			// or the type has appeared in another file different to the current file
 			// in this case we will put the type as external in the fileData
 			// and also mutate the IsExternal field of the given type:w
-			log.Debugf("type %s is external to file %s, mutating the external dependencies information", fqTypeName, fileData.Name)
+			log.Debugf("type %s is external to file %s, mutating the external dependencies information",
+				fqTypeName, fileData.Name)
 
 			fileData.ExternalDependingTypes = append(fileData.ExternalDependingTypes, fqTypeName)
 			t.SetExternal(true)

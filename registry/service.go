@@ -3,9 +3,9 @@ package registry
 import (
 	"fmt"
 
-	descriptorpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 )
@@ -19,7 +19,7 @@ func hasHTTPAnnotation(m *descriptorpb.MethodDescriptorProto) bool {
 	return getHTTPAnnotation(m) != nil
 }
 
-func getHTTPMethodPath(m *descriptorpb.MethodDescriptorProto) (method, path string) {
+func getHTTPMethodPath(m *descriptorpb.MethodDescriptorProto) (string, string) {
 	if !hasHTTPAnnotation(m) {
 		return "", ""
 	}
@@ -58,7 +58,10 @@ func getHTTPBody(m *descriptorpb.MethodDescriptorProto) *string {
 	}
 }
 
-func (r *Registry) analyseService(fileData *data.File, packageName string, fileName string, service *descriptorpb.ServiceDescriptorProto) {
+func (r *Registry) analyseService(
+	fileData *data.File,
+	packageName, fileName string,
+	service *descriptorpb.ServiceDescriptorProto) {
 	packageIdentifier := service.GetName()
 	fqName := "." + packageName + "." + packageIdentifier
 
