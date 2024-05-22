@@ -237,7 +237,6 @@ linters:
   - forbidigo # forbids identifiers
   - funlen # tool for detection of long functions
   - gocheckcompilerdirectives # validates go compiler directive comments (//go:)
-  - gochecknoglobals # checks that no global variables exist
   - gochecknoinits # checks that no init functions are present in Go code
   - gochecksumtype # checks exhaustiveness on Go "sum types"
   - gocognit # computes and checks the cognitive complexity of functions
@@ -277,7 +276,6 @@ linters:
   - tenv # detects using os.Setenv instead of t.Setenv since Go1.17
   - testableexamples # checks if examples are testable (have an expected output)
   - testifylint # checks usage of github.com/stretchr/testify
-  - testpackage # makes you use a separate _test package
   - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
   - unconvert # removes unnecessary type conversions
   - unparam # reports unused function parameters
@@ -286,6 +284,8 @@ linters:
   - whitespace # detects leading and trailing whitespace
 
   ## you may want to enable
+  # - gochecknoglobals # checks that no global variables exist
+  # - testpackage # makes you use a separate _test package
   #- protogetter # reports direct reads from proto message fields when getters should be used
   #- nestif # reports deeply nested if statements
   #- decorder # checks declaration order and count of types, constants, variables and functions
@@ -338,7 +338,7 @@ issues:
     linters: [godot]
   - source: "//noinspection"
     linters: [gocritic]
-  - path: "_test\\.go"
+  - path: "(_test\\.go)"
     linters:
     - bodyclose
     - dupl
@@ -347,3 +347,6 @@ issues:
     - gosec
     - noctx
     - wrapcheck
+
+  exclude-dirs:
+  - test

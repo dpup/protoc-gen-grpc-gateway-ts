@@ -9,8 +9,7 @@ import (
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/generator"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
-	log "github.com/sirupsen/logrus" // nolint: depguard
+	log "github.com/sirupsen/logrus" //nolint: depguard // need to remove
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -23,11 +22,11 @@ func main() {
 
 func run() error {
 	var (
-		useProtoNames    = flag.Bool("use_proto_names", false, "field names will match the protofile instead of lowerCamelCase")
-		useStaticClasses = flag.Bool("use_static_classes", true, "generate static classes instead of functions and a client class")
+		useProtoNames    = flag.Bool("use_proto_names", false, "field names will match the proto file")
+		useStaticClasses = flag.Bool("use_static_classes", true, "use static classes rather than functions and a client")
 		emitUnpopulated  = flag.Bool("emit_unpopulated", false, "expect the gRPC Gateway to send zero values over the wire")
 
-		fetchModuleDirectory = flag.String("fetch_module_directory", ".", "where shared typescript file should be placed, default $(pwd)")
+		fetchModuleDirectory = flag.String("fetch_module_directory", ".", "where shared typescript file should be placed")
 		fetchModuleFilename  = flag.String("fetch_module_filename", "fetch.pb.ts", "name of shard typescript file")
 		tsImportRoots        = flag.String("ts_import_roots", "", "defaults to $(pwd)")
 		tsImportRootAliases  = flag.String("ts_import_root_aliases", "", "use import aliases instead of relative paths")
@@ -99,11 +98,11 @@ func configureLogging(enableLogging bool, levelStr string) error {
 		log.SetOutput(os.Stderr)
 		log.Debugf("Logging configured completed, logging has been enabled")
 		if levelStr != "" {
-			if level, err := log.ParseLevel(levelStr); err != nil {
-				return fmt.Errorf("error parsing log level %s: %s", levelStr, err)
-			} else {
-				log.SetLevel(level)
+			level, err := log.ParseLevel(levelStr)
+			if err != nil {
+				return fmt.Errorf("error parsing log level %s: %w", levelStr, err)
 			}
+			log.SetLevel(level)
 		} else {
 			log.SetLevel(log.InfoLevel)
 		}
@@ -111,7 +110,7 @@ func configureLogging(enableLogging bool, levelStr string) error {
 	return nil
 }
 
-func getParamsMap(req *plugin.CodeGeneratorRequest) map[string]string {
+func getParamsMap(req *pluginpb.CodeGeneratorRequest) map[string]string {
 	paramsMap := make(map[string]string)
 	params := req.GetParameter()
 
@@ -126,8 +125,8 @@ func getParamsMap(req *plugin.CodeGeneratorRequest) map[string]string {
 	return paramsMap
 }
 
-func decodeReq() *plugin.CodeGeneratorRequest {
-	req := &plugin.CodeGeneratorRequest{}
+func decodeReq() *pluginpb.CodeGeneratorRequest {
+	req := &pluginpb.CodeGeneratorRequest{}
 	data, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		panic(err)
