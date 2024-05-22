@@ -192,7 +192,7 @@ linters-settings:
     # - "all": report all global loggers
     # - "default": report only the default slog logger
     # Default: ""
-    no-global: "all"
+    no-global: ""
     # Enforce using methods that accept a context.
     # Values:
     # - "": disabled

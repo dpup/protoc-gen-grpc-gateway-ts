@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/generator"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
-	log "github.com/sirupsen/logrus" //nolint: depguard // need to remove
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -73,7 +73,7 @@ func run() error {
 		return fmt.Errorf("error instantiating a new generator: %w", err)
 	}
 
-	log.Debug("Starts generating file request")
+	slog.Debug("Starts generating file request")
 
 	resp, err := g.Generate(req)
 	if err != nil {
@@ -85,27 +85,33 @@ func run() error {
 
 	encodeResponse(resp)
 
-	log.Debug("generation finished")
+	slog.Debug("generation finished")
 
 	return nil
 }
 
 func configureLogging(enableLogging bool, levelStr string) error {
 	if enableLogging {
-		log.SetFormatter(&log.TextFormatter{
-			DisableTimestamp: true,
-		})
-		log.SetOutput(os.Stderr)
-		log.Debugf("Logging configured completed, logging has been enabled")
+		level := slog.LevelInfo
 		if levelStr != "" {
-			level, err := log.ParseLevel(levelStr)
-			if err != nil {
-				return fmt.Errorf("error parsing log level %s: %w", levelStr, err)
+			switch levelStr {
+			case "debug":
+				level = slog.LevelDebug
+			case "info":
+				level = slog.LevelInfo
+			case "warn":
+				level = slog.LevelWarn
+			case "error":
+				level = slog.LevelError
+			default:
+				return fmt.Errorf("invalid log level %s", levelStr)
 			}
-			log.SetLevel(level)
-		} else {
-			log.SetLevel(log.InfoLevel)
 		}
+		opts := &slog.HandlerOptions{Level: level}
+		logger := slog.New(slog.NewTextHandler(os.Stderr, opts))
+		slog.SetDefault(logger)
+	} else {
+		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}
 	return nil
 }

@@ -1,19 +1,20 @@
 package registry
 
 import (
+	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/options"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus" //nolint: depguard // Need to remove
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 func (r *Registry) analyseFile(f *descriptorpb.FileDescriptorProto) (*data.File, error) {
-	log.Debugf("analysing %s", f.GetName())
+	slog.Debug("analysing file", slog.String("filename", f.GetName()))
 	fileData := data.NewFile()
 	fileName := f.GetName()
 	packageName := f.GetPackage()
@@ -52,7 +53,7 @@ func (r *Registry) analyseFile(f *descriptorpb.FileDescriptorProto) (*data.File,
 
 func (r *Registry) addFetchModuleDependencies(fileData *data.File) error {
 	if !fileData.Services.RequiresFetchModule() {
-		log.Debugf("no services found for %s, skipping fetch module", fileData.Name)
+		slog.Debug("no services found for, skipping fetch module", slog.String("name", fileData.Name))
 		return nil
 	}
 
@@ -75,7 +76,7 @@ func (r *Registry) addFetchModuleDependencies(fileData *data.File) error {
 		return errors.Wrapf(err, "error replacing source file with alias for %s", fileName)
 	}
 
-	log.Debugf("added fetch dependency %s for %s", sourceFile, fileData.TSFileName)
+	slog.Debug("added fetch dependency %s for %s", sourceFile, fileData.TSFileName)
 	fileData.AddDependency(&data.Dependency{
 		ModuleIdentifier: "fm",
 		SourceFile:       sourceFile,
@@ -92,7 +93,8 @@ func (r *Registry) analyseFilePackageTypeDependencies(fileData *data.File) {
 		// also need to change the type's IsExternal information for rendering purpose
 		typeInfo := t.GetType()
 		fqTypeName := typeInfo.Type
-		log.Debugf("checking whether non scala type %s in the same message is external to the current file", fqTypeName)
+		slog.Debug("checking whether non scala type in the same message is external to the current file",
+			slog.Any("type", fqTypeName))
 
 		registryType, foundInRegistry := r.Types[fqTypeName]
 		if !foundInRegistry || registryType.File != fileData.Name {
@@ -100,8 +102,8 @@ func (r *Registry) analyseFilePackageTypeDependencies(fileData *data.File) {
 			// or the type has appeared in another file different to the current file
 			// in this case we will put the type as external in the fileData
 			// and also mutate the IsExternal field of the given type:w
-			log.Debugf("type %s is external to file %s, mutating the external dependencies information",
-				fqTypeName, fileData.Name)
+			slog.Debug(fmt.Sprintf("type %s is external to file %s, mutating the external dependencies information",
+				fqTypeName, fileData.Name))
 
 			fileData.ExternalDependingTypes = append(fileData.ExternalDependingTypes, fqTypeName)
 			t.SetExternal(true)

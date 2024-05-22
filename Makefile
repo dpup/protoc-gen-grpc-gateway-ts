@@ -55,7 +55,7 @@ integration-test-client: build ## Generates the typescript client code used by e
 		-I ../ \
 		--grpc-gateway-ts_out ./test/integration/defaultConfig \
 		--grpc-gateway-ts_opt logtostderr=true \
-		--grpc-gateway-ts_opt loglevel=debug \
+		--grpc-gateway-ts_opt loglevel=info \
 		--grpc-gateway-ts_opt use_proto_names=false \
 		--grpc-gateway-ts_opt emit_unpopulated=false \
 		--grpc-gateway-ts_opt enable_styling_check=true \
@@ -67,7 +67,7 @@ integration-test-client: build ## Generates the typescript client code used by e
 		-I ../ \
 		--grpc-gateway-ts_out ./test/integration/useProtoNames \
 		--grpc-gateway-ts_opt logtostderr=true \
-		--grpc-gateway-ts_opt loglevel=debug \
+		--grpc-gateway-ts_opt loglevel=info \
 		--grpc-gateway-ts_opt use_proto_names=true \
 		--grpc-gateway-ts_opt emit_unpopulated=false \
 		--grpc-gateway-ts_opt enable_styling_check=true \
@@ -79,7 +79,7 @@ integration-test-client: build ## Generates the typescript client code used by e
 		-I ../ \
 		--grpc-gateway-ts_out ./test/integration/emitUnpopulated \
 		--grpc-gateway-ts_opt logtostderr=true \
-		--grpc-gateway-ts_opt loglevel=debug \
+		--grpc-gateway-ts_opt loglevel=info \
 		--grpc-gateway-ts_opt use_proto_names=false \
 		--grpc-gateway-ts_opt emit_unpopulated=true \
 		--grpc-gateway-ts_opt enable_styling_check=true \
@@ -91,7 +91,7 @@ integration-test-client: build ## Generates the typescript client code used by e
 		-I ../ \
 		--grpc-gateway-ts_out ./test/integration/noStaticClasses \
 		--grpc-gateway-ts_opt logtostderr=true \
-		--grpc-gateway-ts_opt loglevel=debug \
+		--grpc-gateway-ts_opt loglevel=info \
 		--grpc-gateway-ts_opt use_proto_names=false \
 		--grpc-gateway-ts_opt emit_unpopulated=false \
 		--grpc-gateway-ts_opt enable_styling_check=true \

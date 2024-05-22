@@ -3,12 +3,11 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"regexp"
 	"strings"
 	"text/template"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Masterminds/sprig"
 
@@ -86,7 +85,7 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 		matches := reg.FindAllStringSubmatch(methodURL, -1)
 		fieldsInPath := make([]string, 0, len(matches))
 		if len(matches) > 0 {
-			log.Debugf("url matches %v", matches)
+			slog.Debug("url matches", slog.Any("matches", matches))
 			for _, m := range matches {
 				expToReplace := m[0]
 				fieldName := fieldNameFn(m[1])
