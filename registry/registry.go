@@ -1,6 +1,8 @@
 package registry
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -8,7 +10,6 @@ import (
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus" //nolint: depguard // not sure, will remove
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -65,14 +66,14 @@ type Registry struct {
 // NewRegistry initialise the registry and return the instance.
 func NewRegistry(opts Options) (*Registry, error) {
 	tsImportRoots, tsImportRootAliases, err := getTSImportRootInformation(opts)
-	log.Debugf("found ts import roots %v", tsImportRoots)
-	log.Debugf("found ts import root aliases %v", tsImportRootAliases)
+	slog.Debug("found ts import roots", slog.Any("importRoots", tsImportRoots))
+	slog.Debug("found ts import root aliases", slog.Any("importRootAliases", tsImportRootAliases))
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting common import root information")
 	}
 
-	log.Debugf("found fetch module directory %s", opts.FetchModuleDirectory)
-	log.Debugf("found fetch module name %s", opts.FetchModuleFilename)
+	slog.Debug("found fetch module directory", slog.String("moduleDir", opts.FetchModuleDirectory))
+	slog.Debug("found fetch module name", slog.String("moduleName", opts.FetchModuleFilename))
 
 	return &Registry{
 		Options:             opts,
@@ -161,7 +162,7 @@ func (r *Registry) Analyse(req *pluginpb.CodeGeneratorRequest) (map[string]*data
 	}
 
 	files := req.GetProtoFile()
-	log.Debugf("about to start anaylyse files, %d in total", len(files))
+	slog.Debug("about to start anaylyse files", slog.Int("count", len(files)))
 	data := make(map[string]*data.File)
 	// analyse all files in the request first
 	for _, f := range files {
@@ -258,9 +259,9 @@ func (r *Registry) getSourceFileForImport(source, target, root, alias string) (s
 		}
 
 		ret = strings.ReplaceAll(absTarget, absRoot, alias)
-		log.Debugf("replacing root alias %s for %s, result: %s", alias, target, ret)
+		slog.Debug(fmt.Sprintf("replacing root alias %s for %s, result: %s", alias, target, ret))
 	} else { // return relative path here
-		log.Debugf("no root alias found, trying to get the relative path for %s", target)
+		slog.Debug("no root alias found, trying to get the relative path", slog.String("target", target))
 		absSource, err := filepath.Abs(source)
 		if err != nil {
 			return "", errors.Wrapf(err, "error looking up absolute directory with base dir: %s", source)
@@ -272,14 +273,14 @@ func (r *Registry) getSourceFileForImport(source, target, root, alias string) (s
 		}
 
 		slashPath := filepath.ToSlash(ret)
-		log.Debugf("got relative path %s for %s", target, slashPath)
+		slog.Debug(fmt.Sprintf("got relative path %s for %s", target, slashPath))
 
 		// sub directory will not have relative path ./, if this happens, prepend one
 		if !strings.HasPrefix(slashPath, "../") {
 			ret = filepath.FromSlash("./" + slashPath)
 		}
 
-		log.Debugf("no root alias found, trying to get the relative path for %s, result: %s", target, ret)
+		slog.Debug(fmt.Sprintf("no root alias found, trying to get the relative path for %s, result: %s", target, ret))
 	}
 
 	// remove .ts suffix if there's any
@@ -293,7 +294,7 @@ func (r *Registry) getSourceFileForImport(source, target, root, alias string) (s
 
 func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*data.File) error {
 	for _, fileData := range filesData {
-		log.Debugf("collecting dependencies information for %s", fileData.TSFileName)
+		slog.Debug("collecting dependencies information", slog.String("fileName", fileData.TSFileName))
 		// dependency group up the dependency by package+file
 		dependencies := make(map[string]*data.Dependency)
 		for _, typeName := range fileData.ExternalDependingTypes {
@@ -318,7 +319,7 @@ func (r *Registry) collectExternalDependenciesFromData(filesData map[string]*dat
 				target := data.GetTSFileName(typeInfo.File)
 				var sourceFile string
 				if pkg, ok := r.TSPackages[target]; ok {
-					log.Debugf("package import override %s has been found for file %s", pkg, target)
+					slog.Debug("package import override has been found", slog.String("pkg", pkg), slog.String("target", target))
 					sourceFile = pkg
 				} else {
 					foundAtRoot, alias, err := r.findRootAliasForPath(func(absRoot string) (bool, error) {

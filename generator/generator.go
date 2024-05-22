@@ -3,11 +3,11 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"text/template"
 
-	log "github.com/sirupsen/logrus" //nolint: depguard // Need to remove
 	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
@@ -37,17 +37,17 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(
 		return nil, errors.Wrap(err, "error analysing proto files")
 	}
 	tmpl := ServiceTemplate(t.Registry)
-	log.Debugf("files to generate %v", req.GetFileToGenerate())
+	slog.Debug("generating files", slog.Any("files", req.GetFileToGenerate()))
 
 	requiresFetchModule := false
 	// feed fileData into rendering process
 	for _, fileData := range filesData {
 		if !t.Registry.IsFileToGenerate(fileData.Name) {
-			log.Debugf("file %s is not the file to generate, skipping", fileData.Name)
+			slog.Debug("file is not the file to generate, skipping", slog.String("fileName", fileData.Name))
 			continue
 		}
 
-		log.Debugf("generating file for %s", fileData.TSFileName)
+		slog.Debug("generating file", slog.String("fileName", fileData.TSFileName))
 		data := &TemplateData{
 			File:               fileData,
 			EnableStylingCheck: t.Registry.EnableStylingCheck,
@@ -63,7 +63,7 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(
 
 	if requiresFetchModule {
 		fetchTmpl := FetchModuleTemplate()
-		log.Debugf("generate fetch template")
+		slog.Debug("generate fetch template")
 		generatedFetch, err := t.generateFetchModule(fetchTmpl)
 		if err != nil {
 			return nil, errors.Wrap(err, "error generating fetch module")
