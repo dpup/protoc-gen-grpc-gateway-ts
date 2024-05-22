@@ -1,6 +1,6 @@
 package data
 
-// Message stores the rendering information about message
+// Message stores the rendering information about message.
 type Message struct {
 	// Nested shows whether this message is a nested message and needs to be exported
 	Nested bool
@@ -8,7 +8,7 @@ type Message struct {
 	Name string
 	// Message has been marked as deprecated
 	IsDeprecated bool
-	//FQType is the fully qualified type name for the message itself
+	// FQType is the fully qualified type name for the message itself
 	FQType string
 	// Enums is a list of NestedEnums inside
 	Enums []*NestedEnum
@@ -20,9 +20,11 @@ type Message struct {
 	OptionalFields []*Field
 	// Message is the nested messages defined inside the message
 	Messages []*Message
-	// OneOfFieldsGroups is the grouped list of one of fields with same index. so that renderer can render the clearing of other fields on set.
+	// OneOfFieldsGroups is the grouped list of one of fields with same index. so
+	// that renderer can render the clearing of other fields on set.
 	OneOfFieldsGroups map[int32][]*Field
-	// OneOfFieldNames is the names of one of fields with same index. so that renderer can render the clearing of other fields on set.
+	// OneOfFieldNames is the names of one of fields with same index. so that
+	// renderer can render the clearing of other fields on set.
 	OneOfFieldsNames map[int32]string
 }
 
@@ -47,7 +49,7 @@ func (m *Message) HasStructPBFields() bool {
 	return false
 }
 
-// NewMessage initialises and return a Message
+// NewMessage initialises and return a Message.
 func NewMessage() *Message {
 	return &Message{
 		Nested:            false,
@@ -60,7 +62,7 @@ func NewMessage() *Message {
 	}
 }
 
-// NestedEnum stores the information of enums defined inside a message
+// NestedEnum stores the information of enums defined inside a message.
 type NestedEnum struct {
 	// Name of the Enum inside the class, which will be identical to the name
 	// defined inside the message
@@ -75,7 +77,7 @@ type NestedEnum struct {
 	Type string
 }
 
-// Field stores the information about a field inside message
+// Field stores the information about a field inside message.
 type Field struct {
 	Name string
 	// Type will be similar to NestedEnum.Type. Where scalar type and types inside
@@ -100,7 +102,7 @@ type Field struct {
 	IsRepeated bool
 }
 
-// GetType returns some information of the type to aid the rendering
+// GetType returns some information of the type to aid the rendering.
 func (f *Field) GetType() *TypeInfo {
 	return &TypeInfo{
 		Type:       f.Type,
@@ -110,12 +112,12 @@ func (f *Field) GetType() *TypeInfo {
 	}
 }
 
-// SetExternal mutate the IsExternal attribute
+// SetExternal mutate the IsExternal attribute.
 func (f *Field) SetExternal(external bool) {
 	f.IsExternal = external
 }
 
-// MapEntryType is the generic entry type for both key and value
+// MapEntryType is the generic entry type for both key and value.
 type MapEntryType struct {
 	// Type of the map entry
 	Type string
@@ -123,7 +125,7 @@ type MapEntryType struct {
 	IsExternal bool
 }
 
-// GetType returns the type information for the type entry
+// GetType returns the type information for the type entry.
 func (m *MapEntryType) GetType() *TypeInfo {
 	return &TypeInfo{
 		Type:       m.Type,
@@ -132,7 +134,7 @@ func (m *MapEntryType) GetType() *TypeInfo {
 	}
 }
 
-// SetExternal mutate the IsExternal attribute inside
+// SetExternal mutate the IsExternal attribute inside.
 func (m *MapEntryType) SetExternal(external bool) {
 	m.IsExternal = external
 }

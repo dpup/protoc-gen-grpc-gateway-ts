@@ -7,28 +7,30 @@ import (
 	"strings"
 	"text/template"
 
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
-	log "github.com/sirupsen/logrus" // nolint: depguard
+	log "github.com/sirupsen/logrus" //nolint: depguard // Need to remove
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
 	"github.com/pkg/errors"
 )
 
-// TypeScriptGRPCGatewayGenerator is the protobuf generator for typescript
+// TypeScriptGRPCGatewayGenerator is the protobuf generator for typescript.
 type TypeScriptGRPCGatewayGenerator struct {
 	Registry *registry.Registry
 }
 
-// New returns an initialised generator
+// New returns an initialised generator.
 func New(reg *registry.Registry) (*TypeScriptGRPCGatewayGenerator, error) {
 	return &TypeScriptGRPCGatewayGenerator{
 		Registry: reg,
 	}, nil
 }
 
-// Generate take a code generator request and returns a response. it analyse request with registry and use the generated data to render ts files
-func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
-	resp := &plugin.CodeGeneratorResponse{}
+// Generate take a code generator request and returns a response. it analyse request with registry
+// and use the generated data to render ts files.
+func (t *TypeScriptGRPCGatewayGenerator) Generate(
+	req *pluginpb.CodeGeneratorRequest) (*pluginpb.CodeGeneratorResponse, error) {
+	resp := &pluginpb.CodeGeneratorResponse{}
 
 	filesData, err := t.Registry.Analyse(req)
 	if err != nil {
@@ -73,11 +75,12 @@ func (t *TypeScriptGRPCGatewayGenerator) Generate(req *plugin.CodeGeneratorReque
 	return resp, nil
 }
 
-func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *TemplateData, tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
+func (t *TypeScriptGRPCGatewayGenerator) generateFile(
+	data *TemplateData, tmpl *template.Template) (*pluginpb.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 
 	if data.IsEmpty() {
-		w.Write([]byte(fmt.Sprintln("export default {}")))
+		w.WriteString(fmt.Sprintln("export default {}"))
 	} else {
 		err := tmpl.Execute(w, data)
 		if err != nil {
@@ -88,14 +91,15 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFile(data *TemplateData, tmpl *
 	fileName := data.TSFileName
 	content := strings.TrimSpace(w.String())
 
-	return &plugin.CodeGeneratorResponse_File{
+	return &pluginpb.CodeGeneratorResponse_File{
 		Name:           &fileName,
 		InsertionPoint: nil,
 		Content:        &content,
 	}, nil
 }
 
-func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(tmpl *template.Template) (*plugin.CodeGeneratorResponse_File, error) {
+func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(
+	tmpl *template.Template) (*pluginpb.CodeGeneratorResponse_File, error) {
 	w := bytes.NewBufferString("")
 	fileName := filepath.Join(t.Registry.FetchModuleDirectory, t.Registry.FetchModuleFilename)
 	err := tmpl.Execute(w, &TemplateData{
@@ -107,7 +111,7 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFetchModule(tmpl *template.Temp
 	}
 
 	content := strings.TrimSpace(w.String())
-	return &plugin.CodeGeneratorResponse_File{
+	return &pluginpb.CodeGeneratorResponse_File{
 		Name:           &fileName,
 		InsertionPoint: nil,
 		Content:        &content,

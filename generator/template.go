@@ -24,7 +24,7 @@ var serviceTmplScript string
 //go:embed fetch_tmpl.ts
 var fetchTmplScript string
 
-var fetchTmplHeader = `{{- if not .EnableStylingCheck}}
+const fetchTmplHeader = `{{- if not .EnableStylingCheck}}
 /* eslint-disable */
 // @ts-nocheck
 {{- else -}}
@@ -130,8 +130,8 @@ func buildInitReq(method data.Method) string {
 	return strings.Join(fields, ", ")
 }
 
-// include is the include template functions copied from
-// copied from: https://github.com/helm/helm/blob/8648ccf5d35d682dcd5f7a9c2082f0aaf071e817/pkg/engine/engine.go#L147-L154
+// include is the include template functions copied from copied from:
+// https://github.com/helm/helm/blob/8648ccf5d35d682dcd5f7a9c2082f0aaf071e817/pkg/engine/engine.go#L147-L154
 func include(t *template.Template) func(name string, data interface{}) (string, error) {
 	return func(name string, data interface{}) (string, error) {
 		buf := bytes.NewBufferString("")
@@ -179,14 +179,15 @@ func tsType(r *registry.Registry, fieldType data.Type) string {
 
 		return fmt.Sprintf("Record<%s, %s>", keyType, valueType)
 	}
-	typeStr := ""
-	if mapWellKnownType(info.Type) != "" {
+	var typeStr string
+	switch {
+	case mapWellKnownType(info.Type) != "":
 		typeStr = mapWellKnownType(info.Type)
-	} else if strings.Index(info.Type, ".") != 0 {
+	case strings.Index(info.Type, ".") != 0:
 		typeStr = mapScalaType(info.Type)
-	} else if !info.IsExternal {
+	case !info.IsExternal:
 		typeStr = typeInfo.PackageIdentifier
-	} else {
+	default:
 		typeStr = data.GetModuleName(typeInfo.Package, typeInfo.File) + "." + typeInfo.PackageIdentifier
 	}
 

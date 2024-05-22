@@ -9,9 +9,10 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-// File store the information about rendering a file
+// File store the information about rendering a file.
 type File struct {
-	// Enums is a list of enums to render, due to the fact that there cannot be any enum defined nested in the class in Typescript.
+	// Enums is a list of enums to render, due to the fact that there cannot be
+	// any enum defined nested in the class in Typescript.
 	// All Enums will be rendered at the top level
 	Enums []*Enum
 	// Messages represents top level messages inside the file.
@@ -24,9 +25,12 @@ type File struct {
 	Name string
 	// TSFileName is the name of the output file
 	TSFileName string
-	// PackageNonScalarType stores the type inside the same packages within the file, which will be used to figure out external dependencies inside the same package (different files)
+	// PackageNonScalarType stores the type inside the same packages within the
+	// file, which will be used to figure out external dependencies inside the
+	// same package (different files)
 	PackageNonScalarType []Type
-	// Dependencies is a list of dependencies for the file, which will be rendered at the top of the file as import statements
+	// Dependencies is a list of dependencies for the file, which will be rendered
+	// at the top of the file as import statements
 	dependencies []*Dependency
 }
 
@@ -50,7 +54,7 @@ func (f *File) Dependencies() []*Dependency {
 	return out
 }
 
-// NeedsOneOfSupport indicates the file needs one of support type utilities
+// NeedsOneOfSupport indicates the file needs one of support type utilities.
 func (f *File) NeedsOneOfSupport() bool {
 	for _, m := range f.Messages {
 		if m.HasOneOfFields() {
@@ -71,7 +75,7 @@ func (f *File) NeedsStructPBSupport() bool {
 	return false
 }
 
-// TrackPackageNonScalarType tracks the supplied non scala type in the same package
+// TrackPackageNonScalarType tracks the supplied non scala type in the same package.
 func (f *File) TrackPackageNonScalarType(t Type) {
 	isNonScalarType := strings.Index(t.GetType().Type, ".") == 0
 	if isNonScalarType {
@@ -83,7 +87,7 @@ func (f *File) IsEmpty() bool {
 	return len(f.Enums) == 0 && len(f.Messages) == 0 && len(f.Services) == 0
 }
 
-// NewFile returns an initialised new file
+// NewFile returns an initialised new file.
 func NewFile() *File {
 	return &File{
 		dependencies:           make([]*Dependency, 0),
@@ -92,7 +96,6 @@ func NewFile() *File {
 		Services:               make([]*Service, 0),
 		ExternalDependingTypes: make([]string, 0),
 	}
-
 }
 
 // Dependency stores the information about dependencies.
@@ -117,7 +120,7 @@ func GetModuleName(packageName, fileName string) string {
 	return strcase.ToCamel(packageName) + strcase.ToCamel(name)
 }
 
-// GetTSFileName gets the typescript filename out of the proto file name
+// GetTSFileName gets the typescript filename out of the proto file name.
 func GetTSFileName(fileName string) string {
 	baseName := filepath.Base(fileName)
 	ext := filepath.Ext(fileName)
@@ -125,7 +128,7 @@ func GetTSFileName(fileName string) string {
 	return path.Join(filepath.Dir(fileName), name+".pb.ts")
 }
 
-// Type is an interface to get type out of field and method arguments
+// Type is an interface to get type out of field and method arguments.
 type Type interface {
 	// GetType returns some information of the type to aid the rendering
 	GetType() *TypeInfo
@@ -133,7 +136,7 @@ type Type interface {
 	SetExternal(bool)
 }
 
-// TypeInfo stores some common type information for rendering
+// TypeInfo stores some common type information for rendering.
 type TypeInfo struct {
 	// Type
 	Type string

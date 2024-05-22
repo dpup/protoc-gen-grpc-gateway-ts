@@ -5,11 +5,11 @@ import "strings"
 // JSONCamelCase converts a snake_case identifier to a camelCase identifier,
 // according to the protobuf JSON specification.
 //
-// Copied from: google.golang.org/protobuf/internal/strs
+// Copied from: google.golang.org/protobuf/internal/strs.
 func JSONCamelCase(s string) string {
 	var b []byte
 	var wasUnderscore bool
-	for i := 0; i < len(s); i++ { // proto identifiers are always ASCII
+	for i := range len(s) { // proto identifiers are always ASCII
 		c := s[i]
 		if c != '_' {
 			if wasUnderscore && isASCIILower(c) {
@@ -35,7 +35,7 @@ func functionCase(s string) string {
 
 	// Find the position of the first non-uppercase letter after the initial uppercase sequence
 	firstLowerPos := -1
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if isASCIILower(s[i]) {
 			firstLowerPos = i
 			break

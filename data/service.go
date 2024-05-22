@@ -1,6 +1,6 @@
 package data
 
-// Service is the data representation of Service in proto
+// Service is the data representation of Service in proto.
 type Service struct {
 	// Name is the name of the Service
 	Name string
@@ -8,10 +8,10 @@ type Service struct {
 	Methods []*Method
 }
 
-// Services is an alias of Service array
+// Services is an alias of Service array.
 type Services []*Service
 
-// HasServerStreamingMethod indicates whether there is server side streaming calls inside any of the services
+// HasServerStreamingMethod indicates whether there is server side streaming calls inside any of the services.
 func (s Services) HasServerStreamingMethod() bool {
 	for _, service := range s {
 		for _, method := range service.Methods {
@@ -23,7 +23,7 @@ func (s Services) HasServerStreamingMethod() bool {
 	return false
 }
 
-// HasUnaryCallMethod indicates whether there is unary methods inside any of the services
+// HasUnaryCallMethod indicates whether there is unary methods inside any of the services.
 func (s Services) HasUnaryCallMethod() bool {
 	for _, service := range s {
 		for _, method := range service.Methods {
@@ -35,20 +35,20 @@ func (s Services) HasUnaryCallMethod() bool {
 	return false
 }
 
-// RequiresFetchModule returns whether the given services needs fetch module support
+// RequiresFetchModule returns whether the given services needs fetch module support.
 func (s Services) RequiresFetchModule() bool {
 	hasServices := len(s) > 0
 	return hasServices && (s.HasUnaryCallMethod() || s.HasServerStreamingMethod())
 }
 
-// NewService returns an initialised service
+// NewService returns an initialised service.
 func NewService() *Service {
 	return &Service{
 		Methods: make([]*Method, 0),
 	}
 }
 
-// Method represents the rpc calls in protobuf service
+// Method represents the rpc calls in protobuf service.
 type Method struct {
 	// Name is the name of the method
 	Name string
@@ -68,7 +68,7 @@ type Method struct {
 	HTTPRequestBody *string
 }
 
-// MethodArgument stores the type information about method argument
+// MethodArgument stores the type information about method argument.
 type MethodArgument struct {
 	// Type is the type of the argument
 	Type string
@@ -78,7 +78,7 @@ type MethodArgument struct {
 	IsRepeated bool
 }
 
-// GetType returns some information of the type to aid the rendering
+// GetType returns some information of the type to aid the rendering.
 func (m *MethodArgument) GetType() *TypeInfo {
 	return &TypeInfo{
 		Type:       m.Type,
@@ -87,7 +87,7 @@ func (m *MethodArgument) GetType() *TypeInfo {
 	}
 }
 
-// SetExternal mutates the IsExternal attribute of the type
+// SetExternal mutates the IsExternal attribute of the type.
 func (m *MethodArgument) SetExternal(external bool) {
 	m.IsExternal = external
 }

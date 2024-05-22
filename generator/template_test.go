@@ -30,7 +30,7 @@ func TestFieldName(t *testing.T) {
 			r := &registry.Registry{Options: registry.Options{UseProtoNames: tt.useProtoNames}}
 			fn := fieldName(r)
 			if got := fn(tt.input); got != tt.want {
-				assert.Equal(t, got, tt.want, "fieldName(%s) = %s, want %s", tt.input, got, tt.want)
+				assert.Equal(t, tt.want, got, "fieldName(%s) = %s, want %s", tt.input, got, tt.want)
 			}
 		})
 	}
