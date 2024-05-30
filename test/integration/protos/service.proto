@@ -77,6 +77,15 @@ message HttpDeleteRequest {
   int32 a = 1;
 }
 
+message HttpDeleteWithParamsRequest {
+  int32 id = 1;
+  string reason = 2;
+}
+
+message HttpDeleteWithParamsResponse {
+  string reason = 1;
+}
+
 message HTTPGetWithURLSearchParamsRequest {
   int32 a = 1;
   PostRequest b = 2;
@@ -198,6 +207,11 @@ service CounterService {
   rpc HTTPDelete(HttpDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete: "/delete/{a}"
+    };
+  }
+  rpc HTTPDeleteWithParams(HttpDeleteWithParamsRequest) returns (HttpDeleteWithParamsResponse) {
+    option (google.api.http) = {
+      delete: "/delete/{id}"
     };
   }
   rpc ExternalMessage(ExternalRequest) returns (ExternalResponse);

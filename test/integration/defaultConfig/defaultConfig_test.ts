@@ -100,6 +100,14 @@ describe("test default configuration", () => {
     expect(result).to.be.empty;
   });
 
+  it("http delete with query params", async () => {
+    const result = await CounterService.HTTPDeleteWithParams(
+      { id: 10, reason: "test" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.reason).to.be.equal("test");
+  });
+
   it("http get request with url search parameters", async () => {
     const result = await CounterService.HTTPGetWithURLSearchParams(
       { a: 10, b: { b: 0 }, c: [23, 25], d: { d: 12 } },

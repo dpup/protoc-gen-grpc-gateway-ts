@@ -24,6 +24,9 @@ func TestFieldName(t *testing.T) {
 		{useProtoNames: false, input: "foo3_bar", want: "foo3Bar"},
 		{useProtoNames: false, input: "foo_3bar", want: "foo3bar"},
 		{useProtoNames: false, input: "foo_3_bar", want: "foo3Bar"},
+
+		{useProtoNames: true, input: "k8s_field", want: "k8s_field"},
+		{useProtoNames: true, input: "foo_bar", want: "foo_bar"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {

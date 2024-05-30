@@ -82,6 +82,10 @@ func (r *RealCounterService) HTTPDelete(ctx context.Context, req *HttpDeleteRequ
 	return &emptypb.Empty{}, nil
 }
 
+func (r *RealCounterService) HTTPDeleteWithParams(ctx context.Context, req *HttpDeleteWithParamsRequest) (*HttpDeleteWithParamsResponse, error) {
+	return &HttpDeleteWithParamsResponse{Reason: req.Reason}, nil
+}
+
 func (r *RealCounterService) HTTPGetWithURLSearchParams(ctx context.Context, in *HTTPGetWithURLSearchParamsRequest) (*HTTPGetWithURLSearchParamsResponse, error) {
 	totalC := 0
 	for _, c := range in.GetC() {
