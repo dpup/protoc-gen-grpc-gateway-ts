@@ -96,7 +96,7 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 		}
 		urlPathParams := fmt.Sprintf("[%s]", strings.Join(fieldsInPath, ", "))
 
-		if !method.ClientStreaming && method.HTTPMethod == "GET" {
+		if !method.ClientStreaming && (method.HTTPMethod == "GET" || method.HTTPMethod == "DELETE") {
 			// parse the url to check for query string
 			parsedURL, err := url.Parse(methodURL)
 			if err != nil {
