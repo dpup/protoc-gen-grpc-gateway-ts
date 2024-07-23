@@ -176,6 +176,18 @@ message OneofMessageWithDeprecatedFields {
   }
 }
 
+message MessageWithMultipleOneOfFields {
+  string id = 1;
+  oneof a_string {
+    string a = 2;
+    string b = 3;
+  }
+  oneof a_number {
+    int32 c = 4;
+    int64 d = 5;
+  }
+}
+
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
   rpc StreamingIncrements(StreamingRequest) returns (stream StreamingResponse);

@@ -96,8 +96,8 @@ export type {{.Name}} = Base{{.Name}}
     {{end -}}
     {{fieldName $field.Name}}: {{tsType $field}};
 {{- end}}
-  }>;
-{{- end -}}
+  }>
+{{- end -}};
 
 {{/* Standard, non oneof messages */}}
 
