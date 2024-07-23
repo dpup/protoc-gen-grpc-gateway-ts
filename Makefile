@@ -111,13 +111,13 @@ integration-test-server: tools ## Generates the server dependencies used by the 
 		--grpc-gateway_opt paths=source_relative \
 		--grpc-gateway_opt generate_unbound_methods=true \
 		--grpc-gateway_opt logtostderr=true \
-		--grpc-gateway_opt generate_unbound_methods=true \
 		--openapiv2_out ./test/integration/tmp/openapiv2 \
 		--openapiv2_opt logtostderr=true \
 		--openapiv2_opt use_go_templates=true \
 		--openapiv2_opt simple_operation_ids=true \
 		--openapiv2_opt openapi_naming_strategy=fqn \
 		--openapiv2_opt disable_default_errors=true \
+		--openapiv2_opt generate_unbound_methods=true \
 		service.proto msg.proto
 
 .PHONY: tools
