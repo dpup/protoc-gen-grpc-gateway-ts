@@ -10,14 +10,20 @@ import { b64Decode } from "./fetch.pb";
 
 describe("test static functions", () => {
   it("unary request", async () => {
-    const result = await increment({ counter: 199 });
+    const result = await increment(
+      { counter: 199 },
+      { pathPrefix: "http://localhost:8081" }
+    );
 
     expect(result.result).to.equal(200);
   });
 
   it("failing unary request", async () => {
     try {
-      await failingIncrement({ counter: 199 });
+      await failingIncrement(
+        { counter: 199 },
+        { pathPrefix: "http://localhost:8081" }
+      );
       expect.fail("expected call to throw");
     } catch (e) {
       expect(e).to.have.property("message", "this increment does not work");
@@ -27,8 +33,10 @@ describe("test static functions", () => {
 
   it("streaming request", async () => {
     const response = [] as number[];
-    await streamingIncrements({ counter: 1 }, (resp) =>
-      response.push(resp.result)
+    await streamingIncrements(
+      { counter: 1 },
+      (resp) => response.push(resp.result),
+      { pathPrefix: "http://localhost:8081" }
     );
     expect(response).to.deep.equal([2, 3, 4, 5, 6]);
   });

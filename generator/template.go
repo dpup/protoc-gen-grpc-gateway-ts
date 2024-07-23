@@ -111,7 +111,6 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 				methodURL += "?" + renderURLSearchParamsFn
 			}
 		}
-
 		return methodURL
 	}
 }
