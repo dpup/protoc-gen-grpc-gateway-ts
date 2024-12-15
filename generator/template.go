@@ -77,18 +77,23 @@ func fieldName(r *registry.Registry) func(name string) string {
 	}
 }
 
+var (
+	// match {field} or {field=pattern}, return param and pattern
+	pathParamRegexp = regexp.MustCompile(`{([^=}/]+)(?:=([^}]+))?}`)
+)
+
 func renderURL(r *registry.Registry) func(method data.Method) string {
 	fieldNameFn := fieldName(r)
 	return func(method data.Method) string {
 		methodURL := method.URL
-		reg := regexp.MustCompile("{([^}]+)}")
-		matches := reg.FindAllStringSubmatch(methodURL, -1)
+		matches := pathParamRegexp.FindAllStringSubmatch(methodURL, -1)
 		fieldsInPath := make([]string, 0, len(matches))
 		if len(matches) > 0 {
 			slog.Debug("url matches", slog.Any("matches", matches))
 			for _, m := range matches {
 				expToReplace := m[0]
-				fieldName := fieldNameFn(m[1])
+				fieldNameRaw := m[1]
+				fieldName := fieldNameFn(fieldNameRaw)
 				part := fmt.Sprintf(`${req.%s}`, fieldName)
 				methodURL = strings.ReplaceAll(methodURL, expToReplace, part)
 				fieldsInPath = append(fieldsInPath, fmt.Sprintf(`"%s"`, fieldName))
