@@ -135,3 +135,9 @@ func (r *RealCounterService) HTTPGetWithOptionalFields(ctx context.Context, in *
 func p[T any](v T) *T {
 	return &v
 }
+
+func (r *RealCounterService) HTTPPostWithPathParamPattern(ctx context.Context, in *HttpPostWithPathParamPatternRequest) (*HttpPostWithPathParamPatternResponse, error) {
+	return &HttpPostWithPathParamPatternResponse{
+		PostResult: in.GetA() + in.GetC(),
+	}, nil
+}

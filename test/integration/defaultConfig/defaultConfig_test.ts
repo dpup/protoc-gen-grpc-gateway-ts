@@ -128,6 +128,14 @@ describe("test default configuration", () => {
     });
   });
 
+  it("http post body check request with path param pattern", async () => {
+    const result = await CounterService.HTTPPostWithPathParamPattern(
+      { a: "first/10", req: { b: 15 }, c: "second/is/23" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.postResult).to.equal("first/10second/is/23");
+  });
+
   it("http get request with optional fields", async () => {
     const result = await CounterService.HTTPGetWithOptionalFields(
       {},
