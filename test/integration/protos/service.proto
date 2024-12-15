@@ -115,6 +115,16 @@ message HTTPGetWithZeroValueURLSearchParamsResponse {
   ZeroValueMsg zero_value_msg = 3;
 }
 
+message HttpPostWithPathParamPatternRequest {
+  string a = 1;
+  PostRequest req = 2;
+  string c = 3;
+}
+
+message HttpPostWithPathParamPatternResponse {
+  string post_result = 1;
+}
+
 message OptionalFieldsRequest {}
 
 message OptionalFieldsResponse {
@@ -235,6 +245,12 @@ service CounterService {
   rpc HTTPGetWithZeroValueURLSearchParams(HTTPGetWithZeroValueURLSearchParamsRequest) returns (HTTPGetWithZeroValueURLSearchParamsResponse) {
     option (google.api.http) = {
       get: "/path/query"
+    };
+  }
+  rpc HTTPPostWithPathParamPattern(HttpPostWithPathParamPatternRequest) returns (HttpPostWithPathParamPatternResponse) {
+    option (google.api.http) = {
+      post: "/post/{a=first/*}/{c=**}"
+      body: "req"
     };
   }
   rpc HTTPGetWithOptionalFields(OptionalFieldsRequest) returns (OptionalFieldsResponse) {
