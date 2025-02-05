@@ -218,7 +218,9 @@ func mapWellKnownType(protoType string) string {
 
 func mapScalaType(protoType string) string {
 	switch protoType {
-	case "uint64", "sint64", "int64", "fixed64", "sfixed64", "string":
+	case "uint64", "sint64", "int64", "fixed64", "sfixed64":
+		return "bigint"
+	case "string":
 		return "string"
 	case "float", "double", "int32", "sint32", "uint32", "fixed32", "sfixed32":
 		return "number"

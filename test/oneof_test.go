@@ -41,7 +41,7 @@ import {Environment} from "./environment.pb"
         lines: [{
           identifier: "A.method1",
           file: "a.java",
-          line: "233",
+          line: 233n,
         }],
       }],
     },
