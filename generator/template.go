@@ -78,7 +78,7 @@ func fieldName(r *registry.Registry) func(name string) string {
 }
 
 var (
-	// match {field} or {field=pattern}, return param and pattern
+	// Match {field} or {field=pattern}, and return's param and pattern.
 	pathParamRegexp = regexp.MustCompile(`{([^=}/]+)(?:=([^}]+))?}`)
 )
 
