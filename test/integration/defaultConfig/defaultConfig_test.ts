@@ -52,6 +52,20 @@ describe("test default configuration", () => {
     expect(new TextDecoder().decode(bytes)).to.equal(message);
   });
 
+  it("binary echo no cast", async () => {
+    const message = "→ ping";
+
+    const resp = await CounterService.EchoBinary(
+      {
+        data: new TextEncoder().encode(message),
+      },
+      { pathPrefix: "http://localhost:8081" }
+    );
+
+    const bytes = b64Decode(resp["data"]);
+    expect(new TextDecoder().decode(bytes)).to.equal(message);
+  });
+
   it("http get check request", async () => {
     const req = { numToIncrease: 10 } as HttpGetRequest;
     const result = await CounterService.HTTPGet(req, {

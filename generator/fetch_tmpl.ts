@@ -70,7 +70,9 @@ export function b64Encode(
 
 const invalidEncoding = "invalid encoding";
 
-export function b64Decode(s: string): Uint8Array {
+export function b64Decode(s: any): Uint8Array {
+  if (s instanceof Uint8Array) return s;
+  if (typeof s !== "string") throw Error(invalidEncoding);
   const buffer: number[] = [];
   let offset = 0;
   let j = 0; // goto index
