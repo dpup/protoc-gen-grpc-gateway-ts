@@ -8,6 +8,8 @@ type Message struct {
 	Name string
 	// Message has been marked as deprecated
 	IsDeprecated bool
+	// JsonName is the json_name option from the proto field, if set.
+	JsonName string
 	// FQType is the fully qualified type name for the message itself
 	FQType string
 	// Enums is a list of NestedEnums inside

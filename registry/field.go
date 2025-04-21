@@ -66,6 +66,7 @@ func (r *Registry) analyseField(
 		IsOneOfField: f.OneofIndex != nil,
 		IsOptional:   f.GetProto3Optional(),
 		IsDeprecated: f.GetOptions().GetDeprecated(),
+		JsonName:     f.GetJsonName(),
 		Message:      msgData,
 	}
 
