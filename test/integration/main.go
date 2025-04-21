@@ -44,7 +44,7 @@ const endpoint = "localhost:9000"
 func main() {
 	useProtoNames := flag.Bool("use_proto_names", false, "tell server to use the original proto name in jsonpb")
 	emitUnpopulated := flag.Bool("emit_unpopulated", false, "tell server to emit zero values")
-
+	useJsonName := flag.Bool("use_json_name", false, "tell server to use the json name in jsonpb")
 	flag.Parse()
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)

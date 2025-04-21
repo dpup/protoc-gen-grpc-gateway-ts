@@ -149,7 +149,7 @@ func tsTypeKey(r *registry.Registry) func(field *data.Field) string {
 	return func(field *data.Field) string {
 		// Prefer JsonName if set and different from Name
 		name := fieldName(r)(field.Name)
-		if field.JsonName != "" && field.JsonName != field.Name {
+		if r.UseProtoNames && field.JsonName != "" && field.JsonName != field.Name {
 			name = field.JsonName
 		}
 		if !r.EmitUnpopulated || field.IsOptional {
