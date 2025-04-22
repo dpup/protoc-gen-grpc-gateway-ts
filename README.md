@@ -53,6 +53,11 @@ The generated file will be `input.pb.ts` in the same directory.
 
 By default the gRPC gateway uses `camelCaseFieldNames`. If the gateway has been configured to use the same format as defined in the proto file definition, then this flag should be set to true. See [protojson.MarshalOptions](https://pkg.go.dev/google.golang.org/protobuf/encoding/protojson#MarshalOptions) for the server configuration.
 
+### `use_json_name` (Default: False)
+
+Uses the `json_name` field option instead of the default field name when serializing messages to JSON.
+
+
 ### `emit_unpopulated` (Default: False)
 
 Matches the behavior of [protojson.MarshalOptions](https://pkg.go.dev/google.golang.org/protobuf/encoding/protojson#MarshalOptions) with `EmitUnpopulated` option set to true. If true, zero values will be emited instead of dropped, so `{"str": ""}` instead of `{}`.
