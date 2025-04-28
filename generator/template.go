@@ -147,7 +147,11 @@ func include(t *template.Template) func(name string, data interface{}) (string, 
 
 func tsTypeKey(r *registry.Registry) func(field *data.Field) string {
 	return func(field *data.Field) string {
+		// Prefer JsonName if set and different from Name
 		name := fieldName(r)(field.Name)
+		if r.UseJsonName && field.JsonName != "" && field.JsonName != field.Name {
+			name = field.JsonName
+		}
 		if !r.EmitUnpopulated || field.IsOptional {
 			// When EmitUnpopulated is false, the gateway will return undefined for
 			// any zero value, so all fields may be undefined. Optional fields, may
