@@ -141,3 +141,10 @@ func (r *RealCounterService) HTTPPostWithPathParamPattern(ctx context.Context, i
 		PostResult: in.GetA() + in.GetC(),
 	}, nil
 }
+
+func (r *RealCounterService) Logout(ctx context.Context, in *LogoutRequest) (*LogoutResponse, error) {
+	// Simple implementation: logout succeeds if token is not empty
+	return &LogoutResponse{
+		Success: in.GetToken() != "",
+	}, nil
+}

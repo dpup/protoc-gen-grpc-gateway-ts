@@ -198,6 +198,14 @@ message MessageWithMultipleOneOfFields {
   }
 }
 
+message LogoutRequest {
+  string token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
 service CounterService {
   rpc Increment(UnaryRequest) returns (UnaryResponse);
   rpc StreamingIncrements(StreamingRequest) returns (stream StreamingResponse);
@@ -256,6 +264,15 @@ service CounterService {
   rpc HTTPGetWithOptionalFields(OptionalFieldsRequest) returns (OptionalFieldsResponse) {
     option (google.api.http) = {
       get: "/optional"
+    };
+  }
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      get: "/api/auth/logout"
+      additional_bindings {
+        post: "/api/auth/logout"
+        body: "*"
+      }
     };
   }
 }

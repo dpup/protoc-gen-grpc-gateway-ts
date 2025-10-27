@@ -2,7 +2,10 @@ package registry
 
 import (
 	"fmt"
+	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -25,6 +28,10 @@ func getHTTPMethodPath(m *descriptorpb.MethodDescriptorProto) (string, string) {
 	}
 
 	rule := getHTTPAnnotation(m)
+	return extractHTTPMethodPath(rule)
+}
+
+func extractHTTPMethodPath(rule *annotations.HttpRule) (string, string) {
 	pattern := rule.Pattern
 	switch pattern.(type) {
 	case *annotations.HttpRule_Get:
@@ -46,8 +53,12 @@ func getHTTPBody(m *descriptorpb.MethodDescriptorProto) *string {
 	if !hasHTTPAnnotation(m) {
 		return nil
 	}
-	empty := ""
 	rule := getHTTPAnnotation(m)
+	return extractHTTPBody(rule)
+}
+
+func extractHTTPBody(rule *annotations.HttpRule) *string {
+	empty := ""
 	pattern := rule.Pattern
 	switch pattern.(type) {
 	case *annotations.HttpRule_Get:
@@ -55,6 +66,75 @@ func getHTTPBody(m *descriptorpb.MethodDescriptorProto) *string {
 	default:
 		body := rule.GetBody()
 		return &body
+	}
+}
+
+// generateTSMethodName generates a unique TypeScript method name for a binding
+func generateTSMethodName(rpcName, httpMethod string, bindingIndex int, existingMethods []*data.Method) string {
+	// Primary binding uses the RPC method name as-is
+	if bindingIndex == 0 {
+		return rpcName
+	}
+
+	// For additional bindings, create a name by appending the HTTP method
+	// Capitalize first letter of HTTP method (e.g., "post" -> "Post")
+	titleCaser := cases.Title(language.English)
+	httpMethodTitle := titleCaser.String(strings.ToLower(httpMethod))
+	baseName := rpcName + httpMethodTitle
+
+	// Check for conflicts with existing method names
+	conflictCount := 0
+	for _, method := range existingMethods {
+		if method.TSMethodName == baseName || strings.HasPrefix(method.TSMethodName, baseName) {
+			conflictCount++
+		}
+	}
+
+	// If there's a conflict, append a number
+	if conflictCount > 0 {
+		return fmt.Sprintf("%s%d", baseName, conflictCount+1)
+	}
+
+	return baseName
+}
+
+// createMethodFromRule creates a Method data structure from an HttpRule
+func createMethodFromRule(
+	method *descriptorpb.MethodDescriptorProto,
+	rule *annotations.HttpRule,
+	bindingIndex int,
+	serviceData *data.Service,
+	inputTypeFQName, outputTypeFQName string,
+	isInputTypeExternal, isOutputTypeExternal bool,
+) *data.Method {
+	httpMethod, url := extractHTTPMethodPath(rule)
+	if httpMethod == "" || url == "" {
+		// Should not happen for valid rules, but fallback to defaults
+		httpMethod = "POST"
+		url = "/" + method.GetName()
+	}
+	body := extractHTTPBody(rule)
+
+	// Generate TypeScript method name
+	tsMethodName := generateTSMethodName(method.GetName(), httpMethod, bindingIndex, serviceData.Methods)
+
+	return &data.Method{
+		Name: method.GetName(),
+		URL:  url,
+		Input: &data.MethodArgument{
+			Type:       inputTypeFQName,
+			IsExternal: isInputTypeExternal,
+		},
+		Output: &data.MethodArgument{
+			Type:       outputTypeFQName,
+			IsExternal: isOutputTypeExternal,
+		},
+		ServerStreaming: method.GetServerStreaming(),
+		ClientStreaming: method.GetClientStreaming(),
+		HTTPMethod:      httpMethod,
+		HTTPRequestBody: body,
+		BindingIndex:    bindingIndex,
+		TSMethodName:    tsMethodName,
 	}
 }
 
@@ -98,38 +178,75 @@ func (r *Registry) analyseService(
 			fileData.ExternalDependingTypes = append(fileData.ExternalDependingTypes, outputTypeFQName)
 		}
 
-		httpMethod := "POST"
-		url := "/" + serviceURLPart + "/" + method.GetName()
+		// Process primary HTTP binding
 		if hasHTTPAnnotation(method) {
-			hm, u := getHTTPMethodPath(method)
-			if hm != "" && u != "" {
-				httpMethod = hm
-				url = u
+			rule := getHTTPAnnotation(method)
+
+			// Create method for primary binding
+			methodData := createMethodFromRule(
+				method,
+				rule,
+				0, // bindingIndex = 0 for primary
+				serviceData,
+				inputTypeFQName,
+				outputTypeFQName,
+				isInputTypeExternal,
+				isOutputTypeExternal,
+			)
+
+			fileData.TrackPackageNonScalarType(methodData.Input)
+			fileData.TrackPackageNonScalarType(methodData.Output)
+
+			serviceData.Methods = append(serviceData.Methods, methodData)
+
+			// Process additional bindings
+			for idx, additionalRule := range rule.GetAdditionalBindings() {
+				additionalMethodData := createMethodFromRule(
+					method,
+					additionalRule,
+					idx+1, // bindingIndex starts at 1 for additional bindings
+					serviceData,
+					inputTypeFQName,
+					outputTypeFQName,
+					isInputTypeExternal,
+					isOutputTypeExternal,
+				)
+
+				fileData.TrackPackageNonScalarType(additionalMethodData.Input)
+				fileData.TrackPackageNonScalarType(additionalMethodData.Output)
+
+				serviceData.Methods = append(serviceData.Methods, additionalMethodData)
 			}
+		} else {
+			// No HTTP annotation - use defaults (backward compatibility)
+			httpMethod := "POST"
+			url := "/" + serviceURLPart + "/" + method.GetName()
+			body := getHTTPBody(method)
+
+			methodData := &data.Method{
+				Name: method.GetName(),
+				URL:  url,
+				Input: &data.MethodArgument{
+					Type:       inputTypeFQName,
+					IsExternal: isInputTypeExternal,
+				},
+				Output: &data.MethodArgument{
+					Type:       outputTypeFQName,
+					IsExternal: isOutputTypeExternal,
+				},
+				ServerStreaming: method.GetServerStreaming(),
+				ClientStreaming: method.GetClientStreaming(),
+				HTTPMethod:      httpMethod,
+				HTTPRequestBody: body,
+				BindingIndex:    0,
+				TSMethodName:    method.GetName(),
+			}
+
+			fileData.TrackPackageNonScalarType(methodData.Input)
+			fileData.TrackPackageNonScalarType(methodData.Output)
+
+			serviceData.Methods = append(serviceData.Methods, methodData)
 		}
-		body := getHTTPBody(method)
-
-		methodData := &data.Method{
-			Name: method.GetName(),
-			URL:  url,
-			Input: &data.MethodArgument{
-				Type:       inputTypeFQName,
-				IsExternal: isInputTypeExternal,
-			},
-			Output: &data.MethodArgument{
-				Type:       outputTypeFQName,
-				IsExternal: isOutputTypeExternal,
-			},
-			ServerStreaming: method.GetServerStreaming(),
-			ClientStreaming: method.GetClientStreaming(),
-			HTTPMethod:      httpMethod,
-			HTTPRequestBody: body,
-		}
-
-		fileData.TrackPackageNonScalarType(methodData.Input)
-		fileData.TrackPackageNonScalarType(methodData.Output)
-
-		serviceData.Methods = append(serviceData.Methods, methodData)
 	}
 
 	fileData.Services = append(fileData.Services, serviceData)

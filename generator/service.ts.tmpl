@@ -121,12 +121,15 @@ export type {{.Name}} = Base{{.Name}}
 {{define "static_service"}}
 export class {{.Name}} {
 {{- range .Methods}}
+  /**
+   * {{.TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+   */
 {{- if .ServerStreaming }}
-  static {{.Name}}(this:void, req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
+  static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
     return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{renderURL .}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
   }
 {{- else }}
-  static {{.Name}}(this:void, req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
+  static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
     return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}});
   }
 {{- end}}
@@ -137,12 +140,15 @@ export class {{.Name}} {
 
 {{define "service_client"}}
 {{- range .Methods}}
+/**
+ * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+ */
 {{- if .ServerStreaming }}
-export function {{functionCase .Name}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
+export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
   return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{renderURL .}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
 }
 {{- else }}
-export function {{functionCase .Name}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
+export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
   return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}});
 }
 {{- end}}
@@ -153,13 +159,16 @@ export class {{.Name}}Client {
     this.initReq = initReq;
   }
   {{- range .Methods}}
+  /**
+   * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+   */
   {{- if .ServerStreaming }}
-  {{functionCase .Name}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
-    return {{functionCase .Name}}(req, entityNotifier, {...this.initReq, ...initReq});
+  {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
+    return {{functionCase .TSMethodName}}(req, entityNotifier, {...this.initReq, ...initReq});
   }
   {{- else }}
-  {{functionCase .Name}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-    return {{functionCase .Name}}(req, {...this.initReq, ...initReq});
+  {{functionCase .TSMethodName}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
+    return {{functionCase .TSMethodName}}(req, {...this.initReq, ...initReq});
   }
   {{- end }}
   {{- end}}

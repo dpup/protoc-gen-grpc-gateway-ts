@@ -66,6 +66,10 @@ type Method struct {
 	HTTPMethod string
 	// HTTPBody is the path for request body in the body's payload
 	HTTPRequestBody *string
+	// BindingIndex indicates which HTTP binding this method represents (0 for primary, 1+ for additional)
+	BindingIndex int
+	// TSMethodName is the generated TypeScript method name
+	TSMethodName string
 }
 
 // MethodArgument stores the type information about method argument.

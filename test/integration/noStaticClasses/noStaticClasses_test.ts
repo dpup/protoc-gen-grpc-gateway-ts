@@ -5,6 +5,8 @@ import {
   failingIncrement,
   streamingIncrements,
   HttpGetRequest,
+  logout,
+  logoutPost,
 } from "./service.pb";
 import { b64Decode } from "./fetch.pb";
 
@@ -39,6 +41,22 @@ describe("test static functions", () => {
       { pathPrefix: "http://localhost:8081" }
     );
     expect(response).to.deep.equal([2, 3, 4, 5, 6]);
+  });
+
+  it("logout with GET binding (primary)", async () => {
+    const result = await logout(
+      { token: "abc123" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.success).to.equal(true);
+  });
+
+  it("logout with POST binding (additional binding)", async () => {
+    const result = await logoutPost(
+      { token: "xyz789" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.success).to.equal(true);
   });
 });
 
@@ -169,5 +187,15 @@ describe("test with client class", () => {
         optStr: "hello",
       },
     });
+  });
+
+  it("logout with GET binding (primary) via client", async () => {
+    const result = await client.logout({ token: "abc123" });
+    expect(result.success).to.equal(true);
+  });
+
+  it("logout with POST binding (additional binding) via client", async () => {
+    const result = await client.logoutPost({ token: "xyz789" });
+    expect(result.success).to.equal(true);
   });
 });

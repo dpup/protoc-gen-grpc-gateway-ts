@@ -180,4 +180,20 @@ describe("test default configuration", () => {
       },
     });
   });
+
+  it("logout with GET binding (primary)", async () => {
+    const result = await CounterService.Logout(
+      { token: "abc123" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.success).to.equal(true);
+  });
+
+  it("logout with POST binding (additional binding)", async () => {
+    const result = await CounterService.LogoutPost(
+      { token: "xyz789" },
+      { pathPrefix: "http://localhost:8081" }
+    );
+    expect(result.success).to.equal(true);
+  });
 });
