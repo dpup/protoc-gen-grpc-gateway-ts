@@ -23,6 +23,7 @@
 7. Fixes for inconsistent field naming when fields contain numbers, e.g. `k8s_field` --> `k8sField`
 8. Fixes for module names that contain dots or dashes
 9. Option to generate _actually_ idiomatic functions with `use_static_classes=false`
+10. Adds support for `alternative_bindings`, e.g. `login()` and `loginPost()`
 
 ## Getting Started:
 
