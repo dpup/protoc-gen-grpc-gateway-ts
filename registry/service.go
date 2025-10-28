@@ -15,7 +15,10 @@ import (
 
 func getHTTPAnnotation(m *descriptorpb.MethodDescriptorProto) *annotations.HttpRule {
 	option := proto.GetExtension(m.GetOptions(), annotations.E_Http)
-	return option.(*annotations.HttpRule)
+	if rule, ok := option.(*annotations.HttpRule); ok {
+		return rule
+	}
+	return nil
 }
 
 func hasHTTPAnnotation(m *descriptorpb.MethodDescriptorProto) bool {

@@ -80,7 +80,6 @@ func (t *TypeScriptGRPCGatewayGenerator) generateFile(
 	w := bytes.NewBufferString("")
 
 	if data.IsEmpty() {
-		//nolint:staticcheck // QF1012: WriteString with Sprintln is readable, optimization not critical
 		w.WriteString(fmt.Sprintln("export default {}"))
 	} else {
 		err := tmpl.Execute(w, data)

@@ -91,7 +91,6 @@ func (r *RealCounterService) HTTPGetWithURLSearchParams(ctx context.Context, in 
 	for _, c := range in.GetC() {
 		totalC += int(c)
 	}
-	//nolint:gosec // G115: totalC is from test data, safe to convert to int32
 	return &HTTPGetWithURLSearchParamsResponse{
 		UrlSearchParamsResult: in.GetA() + in.GetB().GetB() + in.GetD().GetD() + int32(totalC),
 	}, nil

@@ -45,7 +45,6 @@ type cmdResult struct {
 }
 
 func createTestFile(fname, content string) {
-	//nolint:gosec // G304: File path is controlled in test code
 	f, err := os.Create(projectRoot + "/test/testdata/" + fname)
 	if err != nil {
 		panic(err)

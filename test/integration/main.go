@@ -83,12 +83,11 @@ func main() {
 	}()
 
 	go func() {
-		if err := grpcServer.Serve(grpcListener); err != nil {
-			panic(err)
+		if serveErr := grpcServer.Serve(grpcListener); serveErr != nil {
+			panic(serveErr)
 		}
 	}()
 
-	//nolint:gosec // G114: Test server doesn't need production timeouts
 	if err = http.ListenAndServe("localhost:8081", allowCORS(gateway)); err != nil {
 		panic(err)
 	}
