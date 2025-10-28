@@ -51,8 +51,8 @@ func createTestFile(fname, content string) {
 		panic(err)
 	}
 	defer func() {
-		if err := f.Close(); err != nil {
-			panic(err)
+		if closeErr := f.Close(); closeErr != nil {
+			panic(closeErr)
 		}
 	}()
 	if _, err = f.WriteString(content); err != nil {
