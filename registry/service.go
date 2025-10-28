@@ -22,15 +22,6 @@ func hasHTTPAnnotation(m *descriptorpb.MethodDescriptorProto) bool {
 	return getHTTPAnnotation(m) != nil
 }
 
-func getHTTPMethodPath(m *descriptorpb.MethodDescriptorProto) (string, string) {
-	if !hasHTTPAnnotation(m) {
-		return "", ""
-	}
-
-	rule := getHTTPAnnotation(m)
-	return extractHTTPMethodPath(rule)
-}
-
 func extractHTTPMethodPath(rule *annotations.HttpRule) (string, string) {
 	pattern := rule.Pattern
 	switch pattern.(type) {

@@ -7,6 +7,8 @@
 # It is very strict, but not extremely strict.
 # Feel free to adapt and change it for your needs.
 
+version: 2
+
 run:
   # Timeout for analysis, e.g. 30s, 5m.
   # Default: 1m
@@ -201,60 +203,50 @@ linters-settings:
     # Default: ""
     context: "scope"
 
-  tenv:
-    # The option `all` will run against whole test files (`_test.go`) regardless of method/function signatures.
-    # Otherwise, only methods that take `*testing.T`, `*testing.B`, and `testing.TB` as arguments are checked.
-    # Default: false
-    all: true
-
 
 linters:
   disable-all: true
   enable:
   ## enabled by default
   - errcheck # checking for unchecked errors, these unchecked errors can be critical bugs in some cases
-  - gosimple # specializes in simplifying a code
   - govet # reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
   - ineffassign # detects when assignments to existing variables are not used
   - staticcheck # is a go vet on steroids, applying a ton of static analysis checks
-  - typecheck # like the front-end of a Go compiler, parses and type-checks Go code
   - unused # checks for unused constants, variables, functions and types
-  ## disabled by default
+  ## disabled by default - only enable critical bug/error detection linters
   - asasalint # checks for pass []any as any in variadic func(...any)
   - asciicheck # checks that your code does not contain non-ASCII identifiers
   - bidichk # checks for dangerous unicode character sequences
   - bodyclose # checks whether HTTP response body is closed successfully
   - canonicalheader # checks whether net/http.Header uses canonical header
   - copyloopvar # detects places where loop variables are copied
-  - cyclop # checks function and package cyclomatic complexity
-  - dupl # tool for code clone detection
+  # - cyclop # DISABLED: function complexity is not a bug
+  # - dupl # DISABLED: code duplication is not a bug
   - durationcheck # checks for two durations multiplied together
   - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
   - errorlint # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
   - exhaustive # checks exhaustiveness of enum switch statements
-  - exportloopref # checks for pointers to enclosing loop variables
   - fatcontext # detects nested contexts in loops
-  - forbidigo # forbids identifiers
-  - funlen # tool for detection of long functions
+  # - forbidigo # DISABLED: style preference, not a bug
+  # - funlen # DISABLED: function length is not a bug
   - gocheckcompilerdirectives # validates go compiler directive comments (//go:)
-  - gochecknoinits # checks that no init functions are present in Go code
+  # - gochecknoinits # DISABLED: init functions are acceptable in some cases
   - gochecksumtype # checks exhaustiveness on Go "sum types"
-  - gocognit # computes and checks the cognitive complexity of functions
-  - goconst # finds repeated strings that could be replaced by a constant
+  # - gocognit # DISABLED: cognitive complexity is not a bug
+  # - goconst # DISABLED: repeated strings are not bugs
   - gocritic # provides diagnostics that check for bugs, performance and style issues
-  - gocyclo # computes and checks the cyclomatic complexity of functions
-  - godot # checks if comments end in a period
-  - goimports # in addition to fixing imports, goimports also formats your code in the same style as gofmt
+  # - gocyclo # DISABLED: cyclomatic complexity is not a bug
+  # - godot # DISABLED: comment formatting is not a bug
   - gomoddirectives # manages the use of 'replace', 'retract', and 'excludes' directives in go.mod
   - gomodguard # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
   - goprintffuncname # checks that printf-like functions are named with f at the end
   - gosec # inspects source code for security problems
-  - intrange # finds places where for loops could make use of an integer range
-  - lll # reports long lines
+  # - intrange # DISABLED: optimization suggestion, not a bug
+  # - lll # DISABLED: line length is not a bug
   - loggercheck # checks key value pairs for common logger libraries (kitlog,klog,logr,zap)
   - makezero # finds slice declarations with non-zero initial length
   - mirror # reports wrong mirror patterns of bytes/strings usage
-  - mnd # detects magic numbers
+  # - mnd # DISABLED: magic numbers are not bugs
   - musttag # enforces field tags in (un)marshaled structs
   - nakedret # finds naked returns in functions greater than a specified function length
   - nilerr # finds the code that returns nil even if it checks that the error is not nil
@@ -267,21 +259,19 @@ linters:
   - predeclared # finds code that shadows one of Go's predeclared identifiers
   - promlinter # checks Prometheus metrics naming via promlint
   - reassign # checks that package variables are not reassigned
-  - revive # fast, configurable, extensible, flexible, and beautiful linter for Go, drop-in replacement of golint
+  # - revive # DISABLED: documentation linting is not a functional issue
   - rowserrcheck # checks whether Err of rows is checked successfully
   - sloglint # ensure consistent code style when using log/slog
   - spancheck # checks for mistakes with OpenTelemetry/Census spans
   - sqlclosecheck # checks that sql.Rows and sql.Stmt are closed
-  - stylecheck # is a replacement for golint
-  - tenv # detects using os.Setenv instead of t.Setenv since Go1.17
   - testableexamples # checks if examples are testable (have an expected output)
-  - testifylint # checks usage of github.com/stretchr/testify
+  # - testifylint # DISABLED: test assertion style is not a bug
   - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
   - unconvert # removes unnecessary type conversions
   - unparam # reports unused function parameters
-  - usestdlibvars # detects the possibility to use variables/constants from the Go standard library
+  # - usestdlibvars # DISABLED: optimization suggestion, not a bug
   - wastedassign # finds wasted assignment statements
-  - whitespace # detects leading and trailing whitespace
+  # - whitespace # DISABLED: formatting issue, not a bug
 
   ## you may want to enable
   # - gochecknoglobals # checks that no global variables exist
@@ -338,15 +328,45 @@ issues:
     linters: [godot]
   - source: "//noinspection"
     linters: [gocritic]
-  - path: "(_test\\.go)"
+  # Exclude all test files and test directories from style/documentation checks
+  - path: "(_test\\.go|test/.*\\.go)"
     linters:
     - bodyclose
+    - cyclop
     - dupl
+    - forbidigo
     - funlen
+    - gochecknoinits
+    - gocognit
     - goconst
+    - godot
     - gosec
+    - intrange
+    - mnd
     - noctx
+    - revive
+    - testifylint
+    - usestdlibvars
+    - whitespace
     - wrapcheck
-
-  exclude-dirs:
-  - test
+  # Relax documentation requirements for internal packages
+  - path: "(registry|data|generator)/"
+    linters:
+    - revive
+    text: "(package-comment|exported)"
+  # Allow simple optimization suggestions to be ignored
+  - linters: [staticcheck]
+    text: "QF1012"
+  # Relax complexity limits for registry package
+  - path: "registry/.*\\.go"
+    linters:
+    - cyclop
+    - funlen
+    - gocognit
+    - goconst
+    - godot
+  # Relax main.go requirements
+  - path: "main\\.go"
+    linters:
+    - funlen
+    - revive

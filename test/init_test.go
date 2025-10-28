@@ -45,11 +45,16 @@ type cmdResult struct {
 }
 
 func createTestFile(fname, content string) {
+	//nolint:gosec // G304: File path is controlled in test code
 	f, err := os.Create(projectRoot + "/test/testdata/" + fname)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
 	if _, err = f.WriteString(content); err != nil {
 		panic(err)
 	}

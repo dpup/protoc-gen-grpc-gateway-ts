@@ -75,6 +75,7 @@ func (r *Registry) analyseMessage(
 
 	// store a map of one of names
 	for idx, oneOf := range message.GetOneofDecl() {
+		//nolint:gosec // G115: idx from range is safe to convert to int32 for protobuf field indices
 		data.OneOfFieldsNames[int32(idx)] = oneOf.GetName()
 	}
 

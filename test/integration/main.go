@@ -17,6 +17,7 @@ import (
 // preflightHandler adds the necessary headers in order to serve
 // CORS from any origin using the methods "GET", "HEAD", "POST", "PUT", "DELETE"
 // We insist, don't do this without consideration in production systems.
+//nolint:unparam // r is required by http.HandlerFunc signature
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
 	headers := []string{"Content-Type", "Accept", "Authorization"}
 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
@@ -87,6 +88,7 @@ func main() {
 		}
 	}()
 
+	//nolint:gosec // G114: Test server doesn't need production timeouts
 	if err = http.ListenAndServe("localhost:8081", allowCORS(gateway)); err != nil {
 		panic(err)
 	}
