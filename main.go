@@ -23,6 +23,7 @@ func main() {
 func run() error {
 	var (
 		useProtoNames    = flag.Bool("use_proto_names", false, "field names will match the proto file")
+		useJsonName      = flag.Bool("use_json_name", false, "field names will match the json name")
 		useStaticClasses = flag.Bool("use_static_classes", true, "use static classes rather than functions and a client")
 		emitUnpopulated  = flag.Bool("emit_unpopulated", false, "expect the gRPC Gateway to send zero values over the wire")
 
@@ -56,6 +57,7 @@ func run() error {
 
 	reg, err := registry.NewRegistry(registry.Options{
 		UseProtoNames:        *useProtoNames,
+		UseJsonName:          *useJsonName,
 		UseStaticClasses:     *useStaticClasses,
 		EnableStylingCheck:   *enableStylingCheck,
 		EmitUnpopulated:      *emitUnpopulated,

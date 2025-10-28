@@ -28,6 +28,8 @@ type Options struct {
 	FetchModuleFilename string
 	// UseProtoNames will generate field names the same as defined in the proto
 	UseProtoNames bool
+	// UseJsonName will generate field names the same as defined in the json_name annotation
+	UseJsonName bool
 	// UseStaticClasses will cause the generator to generate a static class in the form ServiceName.MethodName, which is
 	// the legacy behavior for this generator. If set to false, the generator will generate a client class with methods
 	// as well as static methods exported for each service method.
