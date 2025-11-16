@@ -49,6 +49,16 @@ func (m *Message) HasStructPBFields() bool {
 	return false
 }
 
+// HasBytesFields returns true when the message has bytes fields that need decoding.
+func (m *Message) HasBytesFields() bool {
+	for _, f := range m.Fields {
+		if f.Type == "bytes" {
+			return true
+		}
+	}
+	return false
+}
+
 // NewMessage initialises and return a Message.
 func NewMessage() *Message {
 	return &Message{
