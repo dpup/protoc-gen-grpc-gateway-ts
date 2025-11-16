@@ -56,6 +56,7 @@ func ServiceTemplate(r *registry.Registry) *template.Template {
 		"buildInitReq": buildInitReq,
 		"fieldName":    fieldName(r),
 		"functionCase": functionCase,
+		"escapeJSDoc":  escapeJSDoc,
 	})
 
 	t = template.Must(t.Parse(serviceTmplScript))
@@ -143,6 +144,12 @@ func include(t *template.Template) func(name string, data interface{}) (string, 
 		}
 		return buf.String(), nil
 	}
+}
+
+// escapeJSDoc escapes */ sequences in JSDoc comments to prevent premature comment closure.
+// URLs with wildcards like /api/v1/{name=customers/*/profiles/*} contain */ which breaks JSDoc.
+func escapeJSDoc(s string) string {
+	return strings.ReplaceAll(s, "*/", `*\/`)
 }
 
 func tsTypeKey(r *registry.Registry) func(field *data.Field) string {

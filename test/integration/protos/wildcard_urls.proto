@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package test;
+
+import "google/api/annotations.proto";
+
+message GetSecretsRequest {
+  string name = 1;
+}
+
+message GetSecretsResponse {
+  repeated string secrets = 1;
+}
+
+message GetItemsRequest {
+  string path = 1;
+}
+
+message GetItemsResponse {
+  repeated string items = 1;
+}
+
+// WildcardService demonstrates wildcard URL patterns that contain */ sequences
+// which would break JSDoc comments without proper escaping
+service WildcardService {
+  // GetSecrets uses a single wildcard pattern
+  rpc GetSecrets(GetSecretsRequest) returns (GetSecretsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/{name=customers/*/secrets}"
+    };
+  }
+
+  // GetProfileSecrets uses multiple wildcard patterns
+  rpc GetProfileSecrets(GetSecretsRequest) returns (GetSecretsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/{name=customers/*/profiles/*/secrets}"
+    };
+  }
+
+  // GetNestedItems uses three wildcard patterns
+  rpc GetNestedItems(GetItemsRequest) returns (GetItemsResponse) {
+    option (google.api.http) = {
+      get: "/api/v2/{path=a/*/b/*/c/*/items}"
+    };
+  }
+}
