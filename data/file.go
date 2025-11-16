@@ -75,6 +75,17 @@ func (f *File) NeedsStructPBSupport() bool {
 	return false
 }
 
+// NeedsBytesDecoders returns true if any messages contain bytes fields requiring decoding.
+func (f *File) NeedsBytesDecoders() bool {
+	for _, m := range f.Messages {
+		if m.HasBytesFields() {
+			return true
+		}
+	}
+
+	return false
+}
+
 // TrackPackageNonScalarType tracks the supplied non scala type in the same package.
 func (f *File) TrackPackageNonScalarType(t Type) {
 	isNonScalarType := strings.Index(t.GetType().Type, ".") == 0

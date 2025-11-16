@@ -43,15 +43,18 @@ type StructPBValue =
 
 {{- range .Messages}}
   {{- include "message" . -}}
+  {{- if .HasBytesFields -}}
+    {{- include "message_decoder" . -}}
+  {{- end -}}
 {{- end}}
 
 {{- if .UseStaticClasses -}}
   {{- range .Services }}
-    {{- include "static_service" . -}}
+    {{- template "static_service" (dict "Service" . "Messages" $.Messages) -}}
   {{- end}}
 {{- else -}}
   {{- range .Services }}
-    {{- include "service_client" . -}}
+    {{- template "service_client" (dict "Service" . "Messages" $.Messages) -}}
   {{- end}}
 {{- end }}
 
@@ -119,8 +122,8 @@ export type {{.Name}} = Base{{.Name}}
 
 
 {{define "static_service"}}
-export class {{.Name}} {
-{{- range .Methods}}
+export class {{.Service.Name}} {
+{{- range .Service.Methods}}
   /**
    * {{.TSMethodName}} - {{.HTTPMethod}} {{.URL}}
    */
@@ -130,7 +133,13 @@ export class {{.Name}} {
   }
 {{- else }}
   static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-    return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}});
+    return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}})
+    {{- $outputType := tsType .Output -}}
+    {{- range $.Messages -}}
+      {{- if and .HasBytesFields (eq .Name $outputType) -}}
+      .then(decode{{.Name}})
+      {{- end -}}
+    {{- end}};
   }
 {{- end}}
 {{- end}}
@@ -139,7 +148,7 @@ export class {{.Name}} {
 {{end}}
 
 {{define "service_client"}}
-{{- range .Methods}}
+{{- range .Service.Methods}}
 /**
  * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
  */
@@ -149,16 +158,22 @@ export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNot
 }
 {{- else }}
 export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-  return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}});
+  return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}})
+  {{- $outputType := tsType .Output -}}
+  {{- range $.Messages -}}
+    {{- if and .HasBytesFields (eq .Name $outputType) -}}
+    .then(decode{{.Name}})
+    {{- end -}}
+  {{- end}};
 }
 {{- end}}
 {{end}}
-export class {{.Name}}Client {
+export class {{.Service.Name}}Client {
   private initReq?: fm.InitReq;
   constructor(initReq?: fm.InitReq) {
     this.initReq = initReq;
   }
-  {{- range .Methods}}
+  {{- range .Service.Methods}}
   /**
    * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
    */
@@ -172,6 +187,39 @@ export class {{.Name}}Client {
   }
   {{- end }}
   {{- end}}
+}
+
+{{end}}
+
+{{define "message_decoder"}}
+type {{.Name}}JSON = {
+{{- range .Fields}}
+{{- if eq .Type "bytes"}}
+{{- if .IsRepeated}}
+  {{tsTypeKey .}}: string[];
+{{- else}}
+  {{tsTypeKey .}}: string;
+{{- end}}
+{{- else}}
+  {{tsTypeKey .}}: {{tsTypeDef .}};
+{{- end}}
+{{- end}}
+};
+
+export function decode{{.Name}}(json: {{.Name}}JSON): {{.Name}} {
+  return {
+{{- range .Fields}}
+{{- if eq .Type "bytes"}}
+{{- if .IsRepeated}}
+    {{fieldName .Name}}: json.{{fieldName .Name}} != null ? json.{{fieldName .Name}}.map((x: string) => fm.b64Decode(x)) : undefined,
+{{- else}}
+    {{fieldName .Name}}: json.{{fieldName .Name}} != null ? fm.b64Decode(json.{{fieldName .Name}}) : undefined,
+{{- end}}
+{{- else}}
+    {{fieldName .Name}}: json.{{fieldName .Name}},
+{{- end}}
+{{- end}}
+  };
 }
 
 {{end}}

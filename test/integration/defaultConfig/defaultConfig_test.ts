@@ -41,15 +41,16 @@ describe("test default configuration", () => {
   it("binary echo", async () => {
     const message = "→ ping";
 
-    const resp: any = await CounterService.EchoBinary(
+    const resp = await CounterService.EchoBinary(
       {
         data: new TextEncoder().encode(message),
       },
       { pathPrefix: "http://localhost:8081" }
     );
 
-    const bytes = b64Decode(resp["data"]);
-    expect(new TextDecoder().decode(bytes)).to.equal(message);
+    // Response data is automatically decoded from base64 to Uint8Array
+    expect(resp.data).to.be.instanceOf(Uint8Array);
+    expect(new TextDecoder().decode(resp.data!)).to.equal(message);
   });
 
   it("binary echo no cast", async () => {
@@ -62,8 +63,9 @@ describe("test default configuration", () => {
       { pathPrefix: "http://localhost:8081" }
     );
 
-    const bytes = b64Decode(resp["data"]);
-    expect(new TextDecoder().decode(bytes)).to.equal(message);
+    // Response data is automatically decoded from base64 to Uint8Array
+    expect(resp.data).to.be.instanceOf(Uint8Array);
+    expect(new TextDecoder().decode(resp.data!)).to.equal(message);
   });
 
   it("http get check request", async () => {
