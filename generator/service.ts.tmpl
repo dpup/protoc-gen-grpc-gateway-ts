@@ -122,7 +122,7 @@ export type {{.Name}} = Base{{.Name}}
 export class {{.Name}} {
 {{- range .Methods}}
   /**
-   * {{.TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+   * {{.TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
    */
 {{- if .ServerStreaming }}
   static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
@@ -141,7 +141,7 @@ export class {{.Name}} {
 {{define "service_client"}}
 {{- range .Methods}}
 /**
- * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+ * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
  */
 {{- if .ServerStreaming }}
 export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
@@ -160,7 +160,7 @@ export class {{.Name}}Client {
   }
   {{- range .Methods}}
   /**
-   * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{.URL}}
+   * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
    */
   {{- if .ServerStreaming }}
   {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {

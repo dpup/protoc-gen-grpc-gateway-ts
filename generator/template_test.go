@@ -38,3 +38,53 @@ func TestFieldName(t *testing.T) {
 		})
 	}
 }
+
+func TestEscapeJSDoc(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name:  "single wildcard slash",
+			input: "/api/v1/{name=customers/*/secrets}",
+			want:  "/api/v1/{name=customers/*\\/secrets}",
+		},
+		{
+			name:  "multiple wildcard slashes",
+			input: "/api/v1/{name=customers/*/profiles/*/secrets}",
+			want:  "/api/v1/{name=customers/*\\/profiles/*\\/secrets}",
+		},
+		{
+			name:  "triple wildcard slashes",
+			input: "/api/v2/{name=a/*/b/*/c/*/items}",
+			want:  "/api/v2/{name=a/*\\/b/*\\/c/*\\/items}",
+		},
+		{
+			name:  "no wildcard slashes",
+			input: "/api/v1/users",
+			want:  "/api/v1/users",
+		},
+		{
+			name:  "trailing wildcard without slash",
+			input: "/api/v1/{name=users/*}",
+			want:  "/api/v1/{name=users/*}",
+		},
+		{
+			name:  "comment closer in text",
+			input: "GET /api/*/",
+			want:  "GET /api/*\\/",
+		},
+		{
+			name:  "no escaping needed",
+			input: "/api/v1/resource",
+			want:  "/api/v1/resource",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := escapeJSDoc(tt.input)
+			assert.Equal(t, tt.want, got, "escapeJSDoc(%s) = %s, want %s", tt.input, got, tt.want)
+		})
+	}
+}
