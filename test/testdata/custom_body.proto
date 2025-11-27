@@ -1,0 +1,55 @@
+syntax = 'proto3';
+
+package test.custombody;
+
+import "google/api/annotations.proto";
+
+message UserUpdate {
+  string display_name = 1;
+  string email = 2;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  UserUpdate user_update = 2;
+}
+
+message UserResponse {
+  string user_id = 1;
+  string display_name = 2;
+  string email = 3;
+}
+
+message CreatePostRequest {
+  string author_id = 1;
+  PostContent post_content = 2;
+}
+
+message PostContent {
+  string title = 1;
+  string body = 2;
+}
+
+message PostResponse {
+  string post_id = 1;
+  string author_id = 2;
+  string title = 3;
+}
+
+service CustomBodyService {
+  // Test custom body field with snake_case name
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/users/{user_id}"
+      body: "user_update"
+    };
+  }
+
+  // Test custom body field with snake_case name
+  rpc CreatePost(CreatePostRequest) returns (PostResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/posts"
+      body: "post_content"
+    };
+  }
+}
