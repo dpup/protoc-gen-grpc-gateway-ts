@@ -3,6 +3,7 @@ package generator
 import (
 	"testing"
 
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,4 +88,88 @@ func TestEscapeJSDoc(t *testing.T) {
 			assert.Equal(t, tt.want, got, "escapeJSDoc(%s) = %s, want %s", tt.input, got, tt.want)
 		})
 	}
+}
+
+func TestBuildInitReq(t *testing.T) {
+	tests := []struct {
+		name             string
+		useProtoNames    bool
+		httpMethod       string
+		httpRequestBody  *string
+		want             string
+		wantContains     string // Alternative: check if output contains this string
+		wantNotContains  string // Check that output does not contain this string
+	}{
+		{
+			name:            "full request body",
+			useProtoNames:   false,
+			httpMethod:      "POST",
+			httpRequestBody: nil,
+			want:            `method: "POST", body: JSON.stringify(req, fm.replacer)`,
+		},
+		{
+			name:            "wildcard request body",
+			useProtoNames:   false,
+			httpMethod:      "PATCH",
+			httpRequestBody: stringPtr("*"),
+			want:            `method: "PATCH", body: JSON.stringify(req, fm.replacer)`,
+		},
+		{
+			name:             "custom field with snake_case converts to camelCase",
+			useProtoNames:    false,
+			httpMethod:       "PUT",
+			httpRequestBody:  stringPtr("user_update"),
+			wantContains:     `req["userUpdate"]`,
+			wantNotContains:  `req["user_update"]`,
+		},
+		{
+			name:             "custom field with snake_case and useProtoNames keeps snake_case",
+			useProtoNames:    true,
+			httpMethod:       "PUT",
+			httpRequestBody:  stringPtr("user_update"),
+			wantContains:     `req["user_update"]`,
+			wantNotContains:  `req["userUpdate"]`,
+		},
+		{
+			name:            "custom field already camelCase",
+			useProtoNames:   false,
+			httpMethod:      "POST",
+			httpRequestBody: stringPtr("userData"),
+			wantContains:    `req["userData"]`,
+		},
+		{
+			name:            "empty custom field body",
+			useProtoNames:   false,
+			httpMethod:      "DELETE",
+			httpRequestBody: stringPtr(""),
+			want:            `method: "DELETE"`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &registry.Registry{Options: registry.Options{UseProtoNames: tt.useProtoNames}}
+			method := data.Method{
+				HTTPMethod:      tt.httpMethod,
+				HTTPRequestBody: tt.httpRequestBody,
+			}
+
+			fn := buildInitReq(r)
+			got := fn(method)
+
+			if tt.want != "" {
+				assert.Equal(t, tt.want, got)
+			}
+			if tt.wantContains != "" {
+				assert.Contains(t, got, tt.wantContains)
+			}
+			if tt.wantNotContains != "" {
+				assert.NotContains(t, got, tt.wantNotContains)
+			}
+		})
+	}
+}
+
+func stringPtr(s string) *string {
+	return &s
 }

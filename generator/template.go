@@ -53,7 +53,7 @@ func ServiceTemplate(r *registry.Registry) *template.Template {
 		"tsTypeKey":    tsTypeKey(r),
 		"tsTypeDef":    tsTypeDef(r),
 		"renderURL":    renderURL(r),
-		"buildInitReq": buildInitReq,
+		"buildInitReq": buildInitReq(r),
 		"fieldName":    fieldName(r),
 		"functionCase": functionCase,
 		"escapeJSDoc":  escapeJSDoc,
@@ -121,17 +121,22 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 	}
 }
 
-func buildInitReq(method data.Method) string {
-	httpMethod := method.HTTPMethod
-	m := `method: "` + httpMethod + `"`
-	fields := []string{m}
-	if method.HTTPRequestBody == nil || *method.HTTPRequestBody == "*" {
-		fields = append(fields, "body: JSON.stringify(req, fm.replacer)")
-	} else if *method.HTTPRequestBody != "" {
-		fields = append(fields, `body: JSON.stringify(req["`+*method.HTTPRequestBody+`"], fm.replacer)`)
-	}
+func buildInitReq(r *registry.Registry) func(method data.Method) string {
+	fieldNameFn := fieldName(r)
+	return func(method data.Method) string {
+		httpMethod := method.HTTPMethod
+		m := `method: "` + httpMethod + `"`
+		fields := []string{m}
+		if method.HTTPRequestBody == nil || *method.HTTPRequestBody == "*" {
+			fields = append(fields, "body: JSON.stringify(req, fm.replacer)")
+		} else if *method.HTTPRequestBody != "" {
+			// Convert field name from snake_case to camelCase to match TypeScript interface
+			fieldName := fieldNameFn(*method.HTTPRequestBody)
+			fields = append(fields, `body: JSON.stringify(req["`+fieldName+`"], fm.replacer)`)
+		}
 
-	return strings.Join(fields, ", ")
+		return strings.Join(fields, ", ")
+	}
 }
 
 // include is the include template functions copied from copied from:
