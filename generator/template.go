@@ -50,13 +50,14 @@ func ServiceTemplate(r *registry.Registry) *template.Template {
 		"tsType": func(fieldType data.Type) string {
 			return tsType(r, fieldType)
 		},
-		"tsTypeKey":    tsTypeKey(r),
-		"tsTypeDef":    tsTypeDef(r),
-		"renderURL":    renderURL(r),
-		"buildInitReq": buildInitReq,
-		"fieldName":    fieldName(r),
-		"functionCase": functionCase,
-		"escapeJSDoc":  escapeJSDoc,
+		"tsTypeKey":            tsTypeKey(r),
+		"tsTypeDef":            tsTypeDef(r),
+		"renderURL":            renderURL(r),
+		"buildInitReq":         buildInitReq,
+		"fieldName":            fieldName(r),
+		"functionCase":         functionCase,
+		"escapeJSDoc":          escapeJSDoc,
+		"wrapBytesFieldsInURL": wrapBytesFieldsInURL(r),
 	})
 
 	t = template.Must(t.Parse(serviceTmplScript))
@@ -118,6 +119,52 @@ func renderURL(r *registry.Registry) func(method data.Method) string {
 			}
 		}
 		return methodURL
+	}
+}
+
+// wrapBytesFieldsInURL wraps bytes field references in URLs with TextDecoder.
+// This ensures that Uint8Array values are properly decoded to UTF-8 strings when
+// interpolated into URL template strings, preventing malformed URLs.
+func wrapBytesFieldsInURL(r *registry.Registry) func(method data.Method, messages []*data.Message) string {
+	fieldNameFn := fieldName(r)
+	return func(method data.Method, messages []*data.Message) string {
+		url := renderURL(r)(method)
+
+		// Find the input message definition
+		var inputMsg *data.Message
+		for _, msg := range messages {
+			// Match message names handling both short and fully qualified names:
+			// - method.Input.Type might be ".test.bytesurl.GetResourceRequest" while msg.Name is "GetResourceRequest"
+			// - method.Input.Type might be "TestRequest" while msg.Name is "foocorp.bar.TestRequest"
+			if strings.HasSuffix(method.Input.Type, msg.Name) ||
+				strings.HasSuffix(msg.Name, method.Input.Type) ||
+				msg.Name == method.Input.Type {
+				inputMsg = msg
+				break
+			}
+		}
+
+		if inputMsg == nil {
+			return url
+		}
+
+		// Find all ${req.fieldName} patterns in the URL
+		re := regexp.MustCompile(`\$\{req\.([^}]+)\}`)
+
+		// Replace bytes fields with TextDecoder wrapper
+		result := re.ReplaceAllStringFunc(url, func(match string) string {
+			fieldName := re.FindStringSubmatch(match)[1]
+
+			// Check if this field is a bytes field in the request message
+			for _, field := range inputMsg.Fields {
+				if fieldName == fieldNameFn(field.Name) && field.GetType().Type == "bytes" {
+					// Use optional chaining and provide empty string fallback for optional fields
+					return fmt.Sprintf("${req.%s ? new TextDecoder().decode(req.%s) : ''}", fieldName, fieldName)
+				}
+			}
+			return match
+		})
+		return result
 	}
 }
 

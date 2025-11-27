@@ -1,0 +1,58 @@
+syntax = 'proto3';
+
+package test.bytesurl;
+
+import "google/api/annotations.proto";
+
+message LoadArtefactRequest {
+  string parent = 1;
+  bytes encoded_artefact_path = 2;
+}
+
+message LoadArtefactResponse {
+  string content = 1;
+  bytes data = 2;
+}
+
+message GetResourceRequest {
+  bytes resource_id = 1;
+}
+
+message GetResourceResponse {
+  string name = 1;
+  bytes content = 2;
+}
+
+message MultiFieldRequest {
+  string project = 1;
+  bytes first_path = 2;
+  string environment = 3;
+  bytes second_path = 4;
+}
+
+message MultiFieldResponse {
+  bool success = 1;
+}
+
+service BytesURLService {
+  // Test single bytes field in URL path
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/resources/{resource_id}"
+    };
+  }
+
+  // Test bytes field with wildcard pattern
+  rpc LoadArtefact(LoadArtefactRequest) returns (LoadArtefactResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/{parent=projects/*/bundles/*}/artefacts/{encoded_artefact_path=**}"
+    };
+  }
+
+  // Test multiple bytes fields in URL path
+  rpc ProcessMultiPath(MultiFieldRequest) returns (MultiFieldResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/{project}/paths/{first_path}/env/{environment}/items/{second_path}"
+    };
+  }
+}
