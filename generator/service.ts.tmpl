@@ -126,14 +126,15 @@ export class {{.Service.Name}} {
 {{- range .Service.Methods}}
   /**
    * {{.TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
+   * Note: Bytes fields in URL paths are automatically decoded to UTF-8 strings.
    */
 {{- if .ServerStreaming }}
   static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
-    return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{renderURL .}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
+    return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{wrapBytesFieldsInURL . $.Messages}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
   }
 {{- else }}
   static {{.TSMethodName}}(this:void, req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-    return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}})
+    return fm.fetchRequest<{{tsType .Output}}>(`{{wrapBytesFieldsInURL . $.Messages}}`, {...initReq, {{buildInitReq .}}})
     {{- $outputType := tsType .Output -}}
     {{- range $.Messages -}}
       {{- if and .HasBytesFields (eq .Name $outputType) -}}
@@ -151,14 +152,15 @@ export class {{.Service.Name}} {
 {{- range .Service.Methods}}
 /**
  * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
+ * Note: Bytes fields in URL paths are automatically decoded to UTF-8 strings.
  */
 {{- if .ServerStreaming }}
 export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {
-  return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{renderURL .}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
+  return fm.fetchStreamingRequest<{{tsType .Output}}>(`{{wrapBytesFieldsInURL . $.Messages}}`, entityNotifier, {...initReq, {{buildInitReq .}}});
 }
 {{- else }}
 export function {{functionCase .TSMethodName}}(req: {{tsType .Input}}, initReq?: fm.InitReq): Promise<{{tsType .Output}}> {
-  return fm.fetchRequest<{{tsType .Output}}>(`{{renderURL .}}`, {...initReq, {{buildInitReq .}}})
+  return fm.fetchRequest<{{tsType .Output}}>(`{{wrapBytesFieldsInURL . $.Messages}}`, {...initReq, {{buildInitReq .}}})
   {{- $outputType := tsType .Output -}}
   {{- range $.Messages -}}
     {{- if and .HasBytesFields (eq .Name $outputType) -}}
@@ -176,6 +178,7 @@ export class {{.Service.Name}}Client {
   {{- range .Service.Methods}}
   /**
    * {{functionCase .TSMethodName}} - {{.HTTPMethod}} {{escapeJSDoc .URL}}
+   * Note: Bytes fields in URL paths are automatically decoded to UTF-8 strings.
    */
   {{- if .ServerStreaming }}
   {{functionCase .TSMethodName}}(req: {{tsType .Input}}, entityNotifier?: fm.NotifyStreamEntityArrival<{{tsType .Output}}>, initReq?: fm.InitReq): Promise<void> {

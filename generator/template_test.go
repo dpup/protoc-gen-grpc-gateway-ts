@@ -3,6 +3,7 @@ package generator
 import (
 	"testing"
 
+	"github.com/dpup/protoc-gen-grpc-gateway-ts/data"
 	"github.com/dpup/protoc-gen-grpc-gateway-ts/registry"
 	"github.com/stretchr/testify/assert"
 )
@@ -85,6 +86,209 @@ func TestEscapeJSDoc(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := escapeJSDoc(tt.input)
 			assert.Equal(t, tt.want, got, "escapeJSDoc(%s) = %s, want %s", tt.input, got, tt.want)
+		})
+	}
+}
+
+func TestWrapBytesFieldsInURL(t *testing.T) {
+	tests := []struct {
+		name          string
+		useProtoNames bool
+		url           string
+		httpMethod    string
+		inputType     string
+		messages      []*data.Message
+		want          string
+	}{
+		{
+			name:          "single bytes field in URL path",
+			useProtoNames: false,
+			url:           `/api/v1/{encoded_path}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "encoded_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.encodedPath ? new TextDecoder().decode(req.encodedPath) : ''}`,
+		},
+		{
+			name:          "bytes field with useProtoNames",
+			useProtoNames: true,
+			url:           `/api/v1/{encoded_path}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "encoded_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.encoded_path ? new TextDecoder().decode(req.encoded_path) : ''}`,
+		},
+		{
+			name:          "non-bytes field in URL path",
+			useProtoNames: false,
+			url:           `/api/v1/{parent}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "parent",
+							Type: "string",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.parent}`,
+		},
+		{
+			name:          "mixed bytes and non-bytes fields",
+			useProtoNames: false,
+			url:           `/api/v1/{parent}/artefacts/{encoded_path}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "parent",
+							Type: "string",
+						},
+						{
+							Name: "encoded_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.parent}/artefacts/${req.encodedPath ? new TextDecoder().decode(req.encodedPath) : ''}`,
+		},
+		{
+			name:          "multiple bytes fields",
+			useProtoNames: false,
+			url:           `/api/v1/{first_path}/items/{second_path}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "first_path",
+							Type: "bytes",
+						},
+						{
+							Name: "second_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.firstPath ? new TextDecoder().decode(req.firstPath) : ''}/items/${req.secondPath ? new TextDecoder().decode(req.secondPath) : ''}`,
+		},
+		{
+			name:          "GET request with bytes field generates query params",
+			useProtoNames: false,
+			url:           `/api/v1/{encoded_path}`,
+			inputType:     "TestRequest",
+			httpMethod:    "GET",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "encoded_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.encodedPath ? new TextDecoder().decode(req.encodedPath) : ''}?${fm.renderURLSearchParams(req, ["encodedPath"])}`,
+		},
+		{
+			name:          "no path parameters",
+			useProtoNames: false,
+			url:           `/api/v1/users`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "name",
+							Type: "string",
+						},
+					},
+				},
+			},
+			want: `/api/v1/users`,
+		},
+		{
+			name:          "input message not found",
+			useProtoNames: false,
+			url:           `/api/v1/{path}`,
+			inputType:     "UnknownRequest",
+			messages: []*data.Message{
+				{
+					Name: "TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.path}`,
+		},
+		{
+			name:          "fully qualified message name",
+			useProtoNames: false,
+			url:           `/api/v1/{encoded_path}`,
+			inputType:     "TestRequest",
+			messages: []*data.Message{
+				{
+					Name: "foocorp.bar.TestRequest",
+					Fields: []*data.Field{
+						{
+							Name: "encoded_path",
+							Type: "bytes",
+						},
+					},
+				},
+			},
+			want: `/api/v1/${req.encodedPath ? new TextDecoder().decode(req.encodedPath) : ''}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &registry.Registry{Options: registry.Options{UseProtoNames: tt.useProtoNames}}
+
+			// Create a mock method
+			method := data.Method{
+				URL:        tt.url,
+				HTTPMethod: tt.httpMethod,
+				Input: &data.MethodArgument{
+					Type: tt.inputType,
+				},
+			}
+
+			fn := wrapBytesFieldsInURL(r)
+			got := fn(method, tt.messages)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
